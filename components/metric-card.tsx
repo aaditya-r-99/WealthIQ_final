@@ -2,12 +2,14 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Info } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface MetricCardProps {
   title: string;
   value: string | number;
   subtitle?: string;
+  tooltip?: string;
   icon?: React.ReactNode;
   trend?: 'up' | 'down' | 'neutral';
   trendValue?: string;
@@ -27,6 +29,7 @@ export function MetricCard({
   title,
   value,
   subtitle,
+  tooltip,
   icon,
   trend,
   trendValue,
@@ -36,9 +39,29 @@ export function MetricCard({
   return (
     <Card className={cn('relative overflow-hidden', className)}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
+        <div className="flex items-center gap-1.5">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            {title}
+          </CardTitle>
+          {tooltip && (
+            <TooltipProvider delayDuration={150}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    className="inline-flex text-muted-foreground/60 hover:text-muted-foreground transition-colors cursor-help"
+                    aria-label={`Information about ${title}`}
+                  >
+                    <Info className="h-3.5 w-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-xs text-xs leading-normal">
+                  <p>{tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </div>
         {icon && (
           <div className={cn('rounded-lg p-2', accentClasses[accent])}>
             {icon}

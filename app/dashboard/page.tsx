@@ -27,6 +27,9 @@ import {
   Info,
   RefreshCw,
   AlertCircle,
+  ChevronDown,
+  ChevronUp,
+  Calculator,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useNotifications } from '@/lib/notification-context';
@@ -54,7 +57,7 @@ import {
   ScoreRow,
 } from '@/lib/financial-engine';
 import { predictFinancialHealthML, MLPredictionResult } from '@/lib/ml-engine';
-import { formatCurrency, formatPercent, formatNumber } from '@/lib/format';
+import { formatCurrency, formatPercent, formatNumber, formatEmergencyFundMonths } from '@/lib/format';
 import Link from 'next/link';
 
 export default function DashboardPage() {
@@ -94,6 +97,7 @@ export default function DashboardPage() {
   const [forecast, setForecast] = useState<FinancialForecastResult | null>(null);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [mlPrediction, setMlPrediction] = useState<MLPredictionResult | null>(null);
+  const [showScoreCalculation, setShowScoreCalculation] = useState(false);
 
   const fetchDashboardData = useCallback(
     async (userId: string, isManualRefresh = false) => {
@@ -403,7 +407,8 @@ export default function DashboardPage() {
               <MetricCard
                 title="Net Worth"
                 value={formatCurrency(netWorth)}
-                subtitle="Cash + Investments + FD - Debt"
+                subtitle="Total assets minus outstanding debt"
+                tooltip="Calculated as savings + investment value + FD principal − total outstanding debt."
                 icon={<CircleDollarSign className="h-4 w-4" />}
                 accent="primary"
               />
@@ -426,9 +431,10 @@ export default function DashboardPage() {
                 accent="warning"
               />
               <MetricCard
-                title="Savings Rate"
+                title="Monthly Savings Rate"
                 value={formatPercent(savingsRate)}
-                subtitle={formatCurrency(totalSavings) + ' saved'}
+                subtitle="Based on income minus recorded expenses."
+                tooltip="This metric measures the share of monthly income remaining after recorded expenses. It is not the same as the amount entered in the Savings module. Formula: (Income − Expenses) / Income"
                 icon={<PiggyBank className="h-4 w-4" />}
                 accent="success"
               />
@@ -440,20 +446,21 @@ export default function DashboardPage() {
             <MetricCard
               title="Expense Ratio"
               value={formatPercent(expenseRatio)}
-              subtitle="Expenses / Income"
+              subtitle="Recorded monthly expenses / monthly income"
               accent="warning"
             />
             <MetricCard
               title="Debt-to-Income"
               value={formatPercent(debtToIncome)}
-              subtitle={formatCurrency(monthlyEmi) + '/month EMI'}
+              subtitle="Monthly EMI / monthly income"
               icon={<CreditCard className="h-4 w-4" />}
               accent={debtToIncome < 0.4 ? 'success' : 'danger'}
             />
             <MetricCard
               title="Emergency Fund"
-              value={`${formatNumber(emergencyFundMonths, 1)} months`}
+              value={formatEmergencyFundMonths(emergencyFundMonths)}
               subtitle="Essential expenses coverage"
+              tooltip="Emergency Fund Coverage = Emergency Fund / Essential Monthly Expenses. Benchmark is 3–6 months."
               icon={<Shield className="h-4 w-4" />}
               accent={
                 emergencyFundMonths >= 3
@@ -632,10 +639,10 @@ export default function DashboardPage() {
                 How Your Health Score Is Calculated (Deterministic Rule-Based Score)
               </CardTitle>
               <p className="text-xs text-muted-foreground mt-1">
-                A fixed 0–100 scoring rubric based on five weighted financial pillars and predefined benchmarks, distinct from the ML archetype classification above.
+                Transparent 0–100 score based on five weighted financial pillars and predefined benchmarks.
               </p>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
                 {scoreBreakdownItems.map((item) => {
                   const value = scoreBreakdown[item.key as keyof ScoreBreakdown] ?? 0;
@@ -660,12 +667,76 @@ export default function DashboardPage() {
                   );
                 })}
               </div>
-              <div className="mt-4 flex items-start gap-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
+
+              {/* Dynamic Example Calculation Expandable */}
+              <div className="border-t border-border/60 pt-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowScoreCalculation(!showScoreCalculation)}
+                  className="text-xs font-medium text-muted-foreground hover:text-foreground"
+                >
+                  <Calculator className="mr-1.5 h-3.5 w-3.5" />
+                  {showScoreCalculation ? 'Hide Example Calculation' : 'Example calculation'}
+                  {showScoreCalculation ? (
+                    <ChevronUp className="ml-1 h-3.5 w-3.5" />
+                  ) : (
+                    <ChevronDown className="ml-1 h-3.5 w-3.5" />
+                  )}
+                </Button>
+
+                {showScoreCalculation && (
+                  <div className="mt-3 rounded-lg border border-border bg-muted/20 p-4 space-y-3 text-xs leading-relaxed">
+                    <p className="font-semibold text-foreground">
+                      Dynamic Calculation from Your Current Pillar Scores:
+                    </p>
+                    <div className="font-mono text-xs bg-background/80 p-3.5 rounded-lg border border-border/60 space-y-3">
+                      <div>
+                        <div className="text-muted-foreground text-[11px] font-sans font-medium">Savings:</div>
+                        <div className="text-foreground">{scoreBreakdown.savings_score} × 25% = {formatPillarProduct(scoreBreakdown.savings_score, 0.25)}</div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground text-[11px] font-sans font-medium">Expense:</div>
+                        <div className="text-foreground">{scoreBreakdown.expense_score} × 25% = {formatPillarProduct(scoreBreakdown.expense_score, 0.25)}</div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground text-[11px] font-sans font-medium">Debt:</div>
+                        <div className="text-foreground">{scoreBreakdown.debt_score} × 20% = {formatPillarProduct(scoreBreakdown.debt_score, 0.20)}</div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground text-[11px] font-sans font-medium">Emergency Fund:</div>
+                        <div className="text-foreground">{scoreBreakdown.emergency_score} × 15% = {formatPillarProduct(scoreBreakdown.emergency_score, 0.15)}</div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground text-[11px] font-sans font-medium">Investments:</div>
+                        <div className="text-foreground">{scoreBreakdown.investment_score} × 15% = {formatPillarProduct(scoreBreakdown.investment_score, 0.15)}</div>
+                      </div>
+                      <div className="pt-2 border-t border-border/50">
+                        <div className="text-muted-foreground text-[11px] font-sans font-medium">Total:</div>
+                        <div className="text-foreground font-semibold">
+                          {formatPillarProduct(scoreBreakdown.savings_score, 0.25)} + {formatPillarProduct(scoreBreakdown.expense_score, 0.25)} + {formatPillarProduct(scoreBreakdown.debt_score, 0.20)} + {formatPillarProduct(scoreBreakdown.emergency_score, 0.15)} + {formatPillarProduct(scoreBreakdown.investment_score, 0.15)} = {healthScore}
+                        </div>
+                      </div>
+                      <div className="pt-1">
+                        <div className="text-muted-foreground text-[11px] font-sans font-medium">Therefore:</div>
+                        <div className="text-primary font-bold text-sm">
+                          Financial Health Score = {healthScore} / 100
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground italic">
+                      Calculated dynamically from your actual recorded pillar values.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-start gap-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
                 <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                 <div className="text-xs text-foreground/80 space-y-1">
                   <p>
-                    <span className="font-semibold">Deterministic Scoring Engine:</span> Your Financial Health Score (0–100) is a fixed rule-based scoring rubric calculated directly from your real financial records across 5 weighted pillars:
-                    Savings Behavior (25%), Expense Burden (25%), Debt Burden (20%), Emergency Fund Coverage (15%), and Investments &amp; Assets (15%). This deterministic calculation is distinct from the statistical ML archetype classifier.
+                    <span className="font-semibold">Deterministic Scoring Engine:</span> Your Financial Health Score (0–100) is a transparent rule-based scoring rubric calculated directly from your real financial records across 5 weighted pillars:
+                    Savings Behavior (25%), Expense Burden (25%), Debt Burden (20%), Emergency Fund (15%), and Investments &amp; Assets (15%). This deterministic calculation is distinct from the statistical ML archetype classifier.
                   </p>
                   <p>
                     <span className="font-semibold">Spending Risk Assessment:</span> Evaluated deterministically from your expense-to-income ratio (&gt;85% High, &gt;65% Med), discretionary expense ratio (&gt;25% Med), debt-to-income ratio (&gt;45% High, &gt;30% Med), and savings rate (&lt;10% Med).
@@ -704,6 +775,11 @@ export default function DashboardPage() {
       )}
     </DashboardLayout>
   );
+}
+
+function formatPillarProduct(score: number, weight: number): string {
+  const prod = score * weight;
+  return Number.isInteger(prod) ? prod.toString() : (Math.round(prod * 10) / 10).toString();
 }
 
 const scoreBreakdownItems = [

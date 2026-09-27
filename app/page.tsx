@@ -228,7 +228,7 @@ const features = [
   {
     title: 'Financial Health Score',
     description:
-      'A hybrid score combining savings, expenses, debt, emergency fund, investments, and income stability into a single 0-100 metric.',
+      'Transparent 0–100 score based on five weighted financial pillars and predefined benchmarks.',
     icon: <Target className="h-6 w-6" />,
   },
   {

@@ -61,7 +61,7 @@ export interface MLPredictionResult {
 }
 
 export const ML_MODEL_VERSION = 'v1.0-knn-archetype';
-export const ML_ALGORITHM = 'Explainable Multi-Feature Archetype Classifier (RBF Softmax)';
+export const ML_ALGORITHM = 'Explainable ML classifier comparing your current financial profile with five financial-health archetypes.';
 
 /**
  * Calibrated Feature Importance Weights in the 10-dimensional space.
@@ -228,7 +228,13 @@ function formatFeatureDisplay(key: keyof MLFeatureInput, raw: MLFeatureInput): s
     case 'debt_to_income':
       return `${(raw.debt_to_income * 100).toFixed(1)}%`;
     case 'emergency_fund_months':
-      return `${raw.emergency_fund_months.toFixed(1)} mo`;
+      if (raw.emergency_fund_months < 1) {
+        return '< 1 month';
+      }
+      {
+        const roundedEF = Math.round(raw.emergency_fund_months * 10) / 10;
+        return roundedEF === 1 ? '1 month' : `${roundedEF} months`;
+      }
     case 'investment_value':
       return `₹${Math.round(raw.investment_value).toLocaleString('en-IN')}`;
     case 'fd_value':
@@ -245,14 +251,14 @@ function formatFeatureDisplay(key: keyof MLFeatureInput, raw: MLFeatureInput): s
 const FEATURE_NAMES: Record<keyof MLFeatureInput, string> = {
   savings_rate: 'Savings Rate',
   expense_ratio: 'Expense Ratio',
-  debt_to_income: 'Debt-to-Income (DTI)',
+  debt_to_income: 'Debt-to-Income',
   emergency_fund_months: 'Emergency Fund Coverage',
-  net_worth: 'Net Worth Scale',
-  investment_value: 'Market Investment Portfolio',
-  fd_value: 'Fixed Deposit Holdings',
-  total_debt: 'Total Debt Burden',
-  monthly_income: 'Monthly Income Level',
-  monthly_expenses: 'Monthly Spending Level',
+  net_worth: 'Net Worth',
+  investment_value: 'Investment Value',
+  fd_value: 'FD Value',
+  total_debt: 'Total Debt',
+  monthly_income: 'Monthly Income',
+  monthly_expenses: 'Monthly Spending',
 };
 
 /**
@@ -288,11 +294,18 @@ function explainFeatureImpact(
           impact: 'positive',
           text: `Low DTI ratio (${(raw.debt_to_income * 100).toFixed(1)}%) protects cash flow from fixed debt service obligations.`,
         };
-      case 'emergency_fund_months':
+      case 'emergency_fund_months': {
+        const efDisplay =
+          raw.emergency_fund_months < 1
+            ? '< 1 month'
+            : Math.round(raw.emergency_fund_months * 10) / 10 === 1
+            ? '1 month'
+            : `${Math.round(raw.emergency_fund_months * 10) / 10} months`;
         return {
           impact: 'positive',
-          text: `Resilient emergency reserve (${raw.emergency_fund_months.toFixed(1)} months) protects against income shocks.`,
+          text: `Resilient emergency reserve (${efDisplay}) protects against income shocks.`,
         };
+      }
       case 'net_worth':
         return {
           impact: 'positive',
@@ -341,11 +354,18 @@ function explainFeatureImpact(
           impact: 'negative',
           text: `Elevated DTI of ${(raw.debt_to_income * 100).toFixed(1)}% ties up substantial income in debt repayment.`,
         };
-      case 'emergency_fund_months':
+      case 'emergency_fund_months': {
+        const efDisplay =
+          raw.emergency_fund_months < 1
+            ? '< 1 month'
+            : Math.round(raw.emergency_fund_months * 10) / 10 === 1
+            ? '1 month'
+            : `${Math.round(raw.emergency_fund_months * 10) / 10} months`;
         return {
           impact: 'negative',
-          text: `Emergency fund of ${raw.emergency_fund_months.toFixed(1)} months is below the recommended 3–6 month threshold.`,
+          text: `Emergency fund of ${efDisplay} is below the recommended 3–6 month threshold.`,
         };
+      }
       case 'net_worth':
         return {
           impact: 'negative',

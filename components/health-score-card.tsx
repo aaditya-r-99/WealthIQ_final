@@ -68,8 +68,7 @@ export function HealthScoreCard({ score, category, className }: HealthScoreCardP
             {category}
           </span>
           <p className="text-xs text-muted-foreground text-center max-w-xs">
-            Hybrid score combining savings, expenses, debt, emergency fund,
-            investments, and income stability.
+            Transparent 0–100 score based on five weighted financial pillars and predefined benchmarks.
           </p>
         </div>
       </CardContent>

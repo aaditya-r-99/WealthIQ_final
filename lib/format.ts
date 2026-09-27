@@ -36,6 +36,18 @@ export function formatPercentRaw(value: number, decimals = 1): string {
   return `${safeValue.toFixed(decimals)}%`;
 }
 
+export function formatEmergencyFundMonths(months: number): string {
+  const safeMonths = isNaN(months) || months === null || months === undefined ? 0 : months;
+  if (safeMonths < 1) {
+    return '< 1 month';
+  }
+  const rounded = Math.round(safeMonths * 10) / 10;
+  if (rounded === 1) {
+    return '1 month';
+  }
+  return `${rounded} months`;
+}
+
 export function formatDate(date: string | Date): string {
   return new Date(date).toLocaleDateString('en-IN', {
     year: 'numeric',
