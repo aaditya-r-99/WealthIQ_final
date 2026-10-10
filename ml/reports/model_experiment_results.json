@@ -1,0 +1,375 @@
+{
+  "model_selection": {
+    "pre_specified_primary_metric": "cv_macro_f1_mean",
+    "selected_model": "Random Forest (Balanced)",
+    "selection_rationale": "Selected strictly based on highest training-set 5-fold CV Macro F1 (0.6949), prior to and independent of holdout test evaluation."
+  },
+  "target_statistics": {
+    "total_raw_rows": 3000,
+    "eligible_total": 2989,
+    "eligible_pct_of_total": 99.63333333333333,
+    "excluded_total": 11,
+    "excluded_pct_of_total": 0.36666666666666664,
+    "class_1_severe_difficulty": {
+      "label_name": "Severe emergency-fund difficulty (very difficult OR unable)",
+      "total_count": 2029,
+      "pct_of_eligible": 67.88223486115757,
+      "pct_of_total_survey": 67.63333333333334,
+      "weighted_pct": 69.76359511250642,
+      "breakdown": {
+        "fin24a_eq_1_very_difficult": 1915,
+        "fin24_eq_7_unable_to_raise": 114
+      }
+    },
+    "class_0_lower_difficulty": {
+      "label_name": "Lower reported difficulty / not classified as severe (somewhat difficult OR not difficult at all)",
+      "total_count": 960,
+      "pct_of_eligible": 32.11776513884242,
+      "pct_of_total_survey": 32.0,
+      "weighted_pct": 30.236404887493563,
+      "breakdown": {
+        "fin24a_eq_2_somewhat_difficult": 719,
+        "fin24a_eq_3_not_difficult_at_all": 241
+      }
+    },
+    "excluded_breakdown": {
+      "fin24_eq_8_dk_source": 6,
+      "fin24_eq_9_ref_source": 4,
+      "fin24a_eq_4_dk_difficulty": 1
+    }
+  },
+  "feature_count": 46,
+  "feature_names": [
+    "female",
+    "age",
+    "educ",
+    "inc_q",
+    "in_workforce",
+    "rural",
+    "has_account_fin",
+    "has_account_mob",
+    "has_account_any",
+    "has_dig_account",
+    "has_debit_card",
+    "has_credit_card",
+    "saved_any",
+    "saved_formal",
+    "saved_informal",
+    "saved_old_age",
+    "borrowed_any",
+    "borrowed_formal",
+    "borrowed_social",
+    "borrowed_informal",
+    "borrowed_medical",
+    "borrowed_business",
+    "borrowed_food_credit",
+    "has_insurance",
+    "applied_mobile_loan",
+    "any_digital_payment",
+    "merchant_payment_dig",
+    "pay_utilities_dig",
+    "remittance_dig",
+    "wage_received_dig",
+    "gov_transfer_dig",
+    "has_mobile_phone",
+    "used_internet",
+    "used_internet_7d",
+    "has_smartphone",
+    "sim_registered_self",
+    "reads_texts",
+    "phone_pin_locked",
+    "received_scam_call",
+    "experienced_disaster_3yr",
+    "worry_cat_1",
+    "worry_cat_2",
+    "worry_cat_3",
+    "worry_cat_4",
+    "worry_cat_5",
+    "worry_cat_6"
+  ],
+  "cv_results": {
+    "Majority Baseline (Dummy)": {
+      "cv_macro_f1_mean": 0.40433468273827,
+      "cv_macro_f1_std": 0.0003361259430966198,
+      "cv_balanced_acc_mean": 0.5,
+      "cv_balanced_acc_std": 0.0,
+      "cv_roc_auc_mean": 0.5,
+      "cv_roc_auc_std": 0.0
+    },
+    "Logistic Regression (Balanced)": {
+      "cv_macro_f1_mean": 0.6746502575084404,
+      "cv_macro_f1_std": 0.02660353388597912,
+      "cv_balanced_acc_mean": 0.6900643082407788,
+      "cv_balanced_acc_std": 0.02821090186247664,
+      "cv_roc_auc_mean": 0.759030172441937,
+      "cv_roc_auc_std": 0.030725020720347777
+    },
+    "K-Nearest Neighbors (k=15)": {
+      "cv_macro_f1_mean": 0.6457335387030303,
+      "cv_macro_f1_std": 0.008479391671825407,
+      "cv_balanced_acc_mean": 0.6373202447516173,
+      "cv_balanced_acc_std": 0.007327301549876622,
+      "cv_roc_auc_mean": 0.7313619887737536,
+      "cv_roc_auc_std": 0.024598477590614516
+    },
+    "Random Forest (Balanced)": {
+      "cv_macro_f1_mean": 0.6949050624688127,
+      "cv_macro_f1_std": 0.026206233358732896,
+      "cv_balanced_acc_mean": 0.7011247140658906,
+      "cv_balanced_acc_std": 0.0261755032937247,
+      "cv_roc_auc_mean": 0.760304900618626,
+      "cv_roc_auc_std": 0.02965164145431394
+    }
+  },
+  "test_evaluations": {
+    "Majority Baseline (Dummy)": {
+      "is_selected_winner_by_cv": false,
+      "confusion_matrix": {
+        "TN": 0,
+        "FP": 192,
+        "FN": 0,
+        "TP": 406
+      },
+      "accuracy": 0.6789297658862876,
+      "balanced_accuracy": 0.5,
+      "macro_f1": 0.4043824701195219,
+      "roc_auc": 0.5,
+      "class_0_lower_difficulty": {
+        "label": "Lower reported difficulty (not severe)",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 192
+      },
+      "class_1_severe_difficulty": {
+        "label": "Severe emergency-fund difficulty",
+        "precision": 0.6789297658862876,
+        "recall": 1.0,
+        "f1": 0.8087649402390438,
+        "support": 406
+      },
+      "survey_weighted_metrics": {
+        "weighted_accuracy": 0.6859827358365427,
+        "weighted_balanced_accuracy": 0.5,
+        "weighted_macro_f1": 0.406874116356936
+      }
+    },
+    "Logistic Regression (Balanced)": {
+      "is_selected_winner_by_cv": false,
+      "confusion_matrix": {
+        "TN": 135,
+        "FP": 57,
+        "FN": 116,
+        "TP": 290
+      },
+      "accuracy": 0.7107023411371237,
+      "balanced_accuracy": 0.7087053571428572,
+      "macro_f1": 0.6898665683391341,
+      "roc_auc": 0.7643934729064039,
+      "class_0_lower_difficulty": {
+        "label": "Lower reported difficulty (not severe)",
+        "precision": 0.5378486055776892,
+        "recall": 0.703125,
+        "f1": 0.6094808126410836,
+        "support": 192
+      },
+      "class_1_severe_difficulty": {
+        "label": "Severe emergency-fund difficulty",
+        "precision": 0.8357348703170029,
+        "recall": 0.7142857142857143,
+        "f1": 0.7702523240371846,
+        "support": 406
+      },
+      "survey_weighted_metrics": {
+        "weighted_accuracy": 0.7311763785421214,
+        "weighted_balanced_accuracy": 0.7104194227999854,
+        "weighted_macro_f1": 0.7004967089740115
+      }
+    },
+    "K-Nearest Neighbors (k=15)": {
+      "is_selected_winner_by_cv": false,
+      "confusion_matrix": {
+        "TN": 69,
+        "FP": 123,
+        "FN": 49,
+        "TP": 357
+      },
+      "accuracy": 0.7123745819397993,
+      "balanced_accuracy": 0.6193426724137931,
+      "macro_f1": 0.6255151824073399,
+      "roc_auc": 0.7091671798029555,
+      "class_0_lower_difficulty": {
+        "label": "Lower reported difficulty (not severe)",
+        "precision": 0.5847457627118644,
+        "recall": 0.359375,
+        "f1": 0.44516129032258067,
+        "support": 192
+      },
+      "class_1_severe_difficulty": {
+        "label": "Severe emergency-fund difficulty",
+        "precision": 0.74375,
+        "recall": 0.8793103448275862,
+        "f1": 0.8058690744920993,
+        "support": 406
+      },
+      "survey_weighted_metrics": {
+        "weighted_accuracy": 0.711545442393951,
+        "weighted_balanced_accuracy": 0.5994759597858436,
+        "weighted_macro_f1": 0.6022064745694737
+      }
+    },
+    "Random Forest (Balanced)": {
+      "is_selected_winner_by_cv": true,
+      "confusion_matrix": {
+        "TN": 117,
+        "FP": 75,
+        "FN": 104,
+        "TP": 302
+      },
+      "accuracy": 0.7006688963210702,
+      "balanced_accuracy": 0.6766086822660098,
+      "macro_f1": 0.6689890190766872,
+      "roc_auc": 0.7404813218390806,
+      "class_0_lower_difficulty": {
+        "label": "Lower reported difficulty (not severe)",
+        "precision": 0.5294117647058824,
+        "recall": 0.609375,
+        "f1": 0.5665859564164649,
+        "support": 192
+      },
+      "class_1_severe_difficulty": {
+        "label": "Severe emergency-fund difficulty",
+        "precision": 0.8010610079575596,
+        "recall": 0.7438423645320197,
+        "f1": 0.7713920817369093,
+        "support": 406
+      },
+      "survey_weighted_metrics": {
+        "weighted_accuracy": 0.7148549910010276,
+        "weighted_balanced_accuracy": 0.6664403560091072,
+        "weighted_macro_f1": 0.6673052117904568
+      }
+    }
+  },
+  "top_features_rf": [
+    {
+      "feature": "age",
+      "importance": 0.0848051014371659
+    },
+    {
+      "feature": "inc_q",
+      "importance": 0.06613565606538709
+    },
+    {
+      "feature": "saved_any",
+      "importance": 0.04664399850202302
+    },
+    {
+      "feature": "educ",
+      "importance": 0.041476928269546916
+    },
+    {
+      "feature": "used_internet",
+      "importance": 0.03703131315438052
+    },
+    {
+      "feature": "saved_formal",
+      "importance": 0.035888092041724204
+    },
+    {
+      "feature": "has_account_mob",
+      "importance": 0.03536733978385579
+    },
+    {
+      "feature": "used_internet_7d",
+      "importance": 0.03486018970581851
+    },
+    {
+      "feature": "has_smartphone",
+      "importance": 0.0343684680436242
+    },
+    {
+      "feature": "reads_texts",
+      "importance": 0.034275177766181705
+    },
+    {
+      "feature": "female",
+      "importance": 0.031250803699856305
+    },
+    {
+      "feature": "borrowed_food_credit",
+      "importance": 0.030437971156094736
+    },
+    {
+      "feature": "borrowed_medical",
+      "importance": 0.024627641599371888
+    },
+    {
+      "feature": "has_debit_card",
+      "importance": 0.024482224645365123
+    },
+    {
+      "feature": "has_dig_account",
+      "importance": 0.022706727330665786
+    }
+  ],
+  "kmeans_behavior_clusters": {
+    "silhouette_score": 0.16451018593602326,
+    "profiles": {
+      "Cluster_0": {
+        "cluster_id": 0,
+        "descriptive_name": "Traditional Moderately Vulnerable Non-Borrowers",
+        "size": 898,
+        "pct_of_sample": 30.04349280695885,
+        "severe_difficulty_rate_pct": 69.59910913140311,
+        "mean_income_quintile": 3.0233853006681515,
+        "mean_age": 36.71492204899777,
+        "female_pct": 61.1358574610245,
+        "rural_pct": 67.59465478841871,
+        "digital_payment_pct": 26.39198218262806,
+        "saved_any_pct": 25.612472160356347,
+        "borrowed_any_pct": 3.0066815144766146,
+        "borrowed_food_credit_pct": 0.0,
+        "smartphone_pct": 36.6369710467706
+      },
+      "Cluster_1": {
+        "cluster_id": 1,
+        "descriptive_name": "Digitally Integrated Higher-Resource Segment",
+        "size": 824,
+        "pct_of_sample": 27.567748410839744,
+        "severe_difficulty_rate_pct": 45.0242718446602,
+        "mean_income_quintile": 3.9526699029126213,
+        "mean_age": 32.890776699029125,
+        "female_pct": 32.28155339805826,
+        "rural_pct": 57.52427184466019,
+        "digital_payment_pct": 99.1504854368932,
+        "saved_any_pct": 77.9126213592233,
+        "borrowed_any_pct": 79.36893203883496,
+        "borrowed_food_credit_pct": 44.66019417475729,
+        "smartphone_pct": 95.02427184466019
+      },
+      "Cluster_2": {
+        "cluster_id": 2,
+        "descriptive_name": "Debt-Stressed Acute Liquidity Constrained Segment",
+        "size": 1267,
+        "pct_of_sample": 42.38875878220141,
+        "severe_difficulty_rate_pct": 81.53117600631413,
+        "mean_income_quintile": 2.706393054459353,
+        "mean_age": 38.21231254932913,
+        "female_pct": 55.643251775848455,
+        "rural_pct": 75.21704814522494,
+        "digital_payment_pct": 37.96369376479874,
+        "saved_any_pct": 29.123914759273877,
+        "borrowed_any_pct": 100.0,
+        "borrowed_food_credit_pct": 70.08681925808997,
+        "smartphone_pct": 26.203630623520123
+      }
+    }
+  },
+  "survey_weight_methodology": {
+    "weight_variable": "wgt",
+    "source": "Gallup World Poll / World Bank Global Findex 2025 post-stratification weight",
+    "description": "Adjusts for household size selection probabilities and aligns sample to national population margins (gender, age, education, rural/urban).",
+    "limitations": "Weighted evaluation models expected population performance under survey sampling design, but does not correct for unobserved confounders or substitute for longitudinal/out-of-domain customer data."
+  }
+}

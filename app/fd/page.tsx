@@ -30,7 +30,26 @@ import { supabase } from '@/lib/supabase/client';
 import type { Database } from '@/lib/supabase/types';
 import { formatCurrency, formatDate } from '@/lib/format';
 import { MOCK_FD_RATES } from '@/lib/mock-data';
-import { Plus, Landmark, Trash2, Pencil, Calendar, CheckCircle2, AlertCircle, Loader2, X } from 'lucide-react';
+import {
+  VERIFIED_OCT_2026_FD_PROFILES,
+  lookupVerifiedFDRate,
+  type VerifiedBankFDProfile,
+} from '@/lib/fd-rates-data';
+import {
+  Plus,
+  Landmark,
+  Trash2,
+  Pencil,
+  Calendar,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  X,
+  ExternalLink,
+  ShieldCheck,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
 
 type FDRow = Database['public']['Tables']['fixed_deposits']['Row'];
 
@@ -47,12 +66,51 @@ export default function FDPage() {
   const [formData, setFormData] = useState({
     bank_name: 'HDFC',
     principal: '',
-    interest_rate: '7.0',
+    interest_rate: '6.25',
     tenure_months: '12',
     start_date: new Date().toISOString().split('T')[0],
     maturity_date: '',
     senior_citizen: false,
   });
+
+  const [comparisonTab, setComparisonTab] = useState<'headline' | 'schedules'>('headline');
+  const [expandedBank, setExpandedBank] = useState<string | null>('hdfc');
+
+  const suggestedRate = lookupVerifiedFDRate(
+    formData.bank_name,
+    Number(formData.tenure_months) || 12,
+    formData.senior_citizen
+  );
+
+  const handleBankChange = (newBank: string) => {
+    const tenure = Number(formData.tenure_months) || 12;
+    const verified = lookupVerifiedFDRate(newBank, tenure, formData.senior_citizen);
+    setFormData((prev) => ({
+      ...prev,
+      bank_name: newBank,
+      interest_rate: verified ? String(verified.rate) : prev.interest_rate,
+    }));
+  };
+
+  const handleTenureChange = (newTenure: string) => {
+    const tenureNum = Number(newTenure);
+    const verified = lookupVerifiedFDRate(formData.bank_name, isNaN(tenureNum) ? 12 : tenureNum, formData.senior_citizen);
+    setFormData((prev) => ({
+      ...prev,
+      tenure_months: newTenure,
+      interest_rate: verified ? String(verified.rate) : prev.interest_rate,
+    }));
+  };
+
+  const handleSeniorCitizenChange = (checked: boolean) => {
+    const tenure = Number(formData.tenure_months) || 12;
+    const verified = lookupVerifiedFDRate(formData.bank_name, tenure, checked);
+    setFormData((prev) => ({
+      ...prev,
+      senior_citizen: checked,
+      interest_rate: verified ? String(verified.rate) : prev.interest_rate,
+    }));
+  };
 
   const fetchRecords = useCallback(
     async (userId: string, showLoading = true) => {
@@ -95,7 +153,7 @@ export default function FDPage() {
     setFormData({
       bank_name: 'HDFC',
       principal: '',
-      interest_rate: '7.0',
+      interest_rate: '6.25',
       tenure_months: '12',
       start_date: new Date().toISOString().split('T')[0],
       maturity_date: '',
@@ -331,15 +389,15 @@ export default function FDPage() {
                 <Label htmlFor="fd-bank">Bank Name</Label>
                 <Select
                   value={formData.bank_name}
-                  onValueChange={(val) => setFormData((prev) => ({ ...prev, bank_name: val }))}
+                  onValueChange={handleBankChange}
                 >
                   <SelectTrigger id="fd-bank">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {MOCK_FD_RATES.map((r) => (
-                      <SelectItem key={r.bank_name} value={r.bank_name}>
-                        {r.bank_name}
+                    {VERIFIED_OCT_2026_FD_PROFILES.map((p) => (
+                      <SelectItem key={p.shortName} value={p.shortName}>
+                        {p.bankName}
                       </SelectItem>
                     ))}
                     <SelectItem value="Other Bank">Other Bank</SelectItem>
@@ -360,18 +418,38 @@ export default function FDPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="fd-rate">Interest Rate (%)</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="fd-rate">Interest Rate (%)</Label>
+                  {suggestedRate && formData.interest_rate !== String(suggestedRate.rate) && (
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, interest_rate: String(suggestedRate.rate) }))}
+                      className="text-[11px] text-primary hover:underline font-medium"
+                    >
+                      Use card rate ({suggestedRate.rate}%)
+                    </button>
+                  )}
+                </div>
                 <Input
                   id="fd-rate"
                   type="number"
                   step="0.01"
-                  placeholder="7.0"
+                  placeholder="6.25"
                   value={formData.interest_rate}
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, interest_rate: e.target.value }))
                   }
                   required
                 />
+                {suggestedRate ? (
+                  <p className="text-[11px] text-muted-foreground">
+                    Verified rate: <strong className="text-foreground">{suggestedRate.rate}%</strong> ({suggestedRate.bucketLabel})
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-muted-foreground">
+                    Custom bank rate. Please verify with your branch.
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -381,9 +459,7 @@ export default function FDPage() {
                   type="number"
                   placeholder="12"
                   value={formData.tenure_months}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, tenure_months: e.target.value }))
-                  }
+                  onChange={(e) => handleTenureChange(e.target.value)}
                   required
                 />
               </div>
@@ -416,11 +492,9 @@ export default function FDPage() {
               <Switch
                 id="senior"
                 checked={formData.senior_citizen}
-                onCheckedChange={(checked) =>
-                  setFormData((prev) => ({ ...prev, senior_citizen: checked }))
-                }
+                onCheckedChange={handleSeniorCitizenChange}
               />
-              <Label htmlFor="senior">Senior Citizen (higher rate)</Label>
+              <Label htmlFor="senior">Senior Citizen (higher rate applicable for aged 60+)</Label>
             </div>
 
             <div className="mt-4 flex items-center gap-3">
@@ -541,44 +615,194 @@ export default function FDPage() {
         </CardContent>
       </Card>
 
-      {/* FD Rate Comparison */}
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle className="text-base">FD Rate Comparison (12-month tenure)</CardTitle>
+      {/* Verified Bank FD Rate Comparison (October 2026) */}
+      <Card className="mt-6 border border-border">
+        <CardHeader className="pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <CardTitle className="text-base flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                Verified Bank FD Rates (Applicable October 2026)
+              </CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Official retail domestic fixed deposits (&lt; ₹3 Crore). Regular and senior citizen rates kept distinct.
+              </p>
+            </div>
+            <div className="flex items-center gap-1.5 self-start sm:self-auto bg-muted/60 p-1 rounded-lg border border-border/50">
+              <button
+                type="button"
+                onClick={() => setComparisonTab('headline')}
+                className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
+                  comparisonTab === 'headline'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                12-Month Benchmark
+              </button>
+              <button
+                type="button"
+                onClick={() => setComparisonTab('schedules')}
+                className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
+                  comparisonTab === 'schedules'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Full Tenure Schedules
+              </button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Bank</TableHead>
-                <TableHead>Regular Rate</TableHead>
-                <TableHead>Senior Citizen Rate</TableHead>
-                <TableHead>Min. Amount</TableHead>
-                <TableHead>Premature Withdrawal</TableHead>
-                <TableHead>Last Updated</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {MOCK_FD_RATES.map((rate) => (
-                <TableRow key={rate.bank_name}>
-                  <TableCell className="font-medium">{rate.bank_name}</TableCell>
-                  <TableCell className="font-semibold text-primary">
-                    {rate.regular_interest_rate}%
-                  </TableCell>
-                  <TableCell>{rate.senior_citizen_interest_rate}%</TableCell>
-                  <TableCell>{formatCurrency(rate.minimum_amount)}</TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
-                    {rate.premature_withdrawal_notes}
-                  </TableCell>
-                  <TableCell className="text-xs">{rate.last_updated}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          <p className="mt-3 text-xs text-muted-foreground">
-            Rates shown are for reference only. Verify current rates with the
-            bank before making a financial decision.
-          </p>
+          {comparisonTab === 'headline' ? (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Bank</TableHead>
+                    <TableHead>12M Regular</TableHead>
+                    <TableHead>12M Senior Citizen</TableHead>
+                    <TableHead>Min. Deposit</TableHead>
+                    <TableHead>Classification</TableHead>
+                    <TableHead>Effective Date</TableHead>
+                    <TableHead>Premature Withdrawal &amp; Notes</TableHead>
+                    <TableHead className="text-right">Official Source</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {VERIFIED_OCT_2026_FD_PROFILES.map((profile) => (
+                    <TableRow key={profile.bankId}>
+                      <TableCell className="font-semibold">{profile.bankName}</TableCell>
+                      <TableCell className="font-bold text-foreground">
+                        {profile.twelveMonthRegularRate.toFixed(2)}%
+                      </TableCell>
+                      <TableCell className="font-semibold text-emerald-600 dark:text-emerald-400">
+                        {profile.twelveMonthSeniorRate.toFixed(2)}%
+                      </TableCell>
+                      <TableCell>{formatCurrency(profile.minimumDepositAmount)}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {profile.depositClassification}
+                      </TableCell>
+                      <TableCell className="text-xs whitespace-nowrap">
+                        {profile.effectiveDate}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground max-w-xs">
+                        {profile.prematureWithdrawalPolicy}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <a
+                          href={profile.officialSourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                        >
+                          Official Portal
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-xs text-muted-foreground">
+                Select a bank below to view its complete tenure buckets from 7 days up to 10 years verified from official October 2026 rate circulars.
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {VERIFIED_OCT_2026_FD_PROFILES.map((profile) => (
+                  <button
+                    key={profile.bankId}
+                    type="button"
+                    onClick={() => setExpandedBank(profile.bankId)}
+                    className={`flex flex-col items-start p-3 rounded-lg border text-left transition-all ${
+                      expandedBank === profile.bankId
+                        ? 'border-primary bg-primary/5 shadow-sm'
+                        : 'border-border bg-card hover:border-border/80'
+                    }`}
+                  >
+                    <span className="text-sm font-semibold text-foreground">{profile.shortName}</span>
+                    <span className="text-xs text-muted-foreground mt-0.5">{profile.depositClassification}</span>
+                    <span className="text-[11px] text-primary font-medium mt-2">
+                      12M: {profile.twelveMonthRegularRate}% (Sr: {profile.twelveMonthSeniorRate}%)
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Expanded Bank's Full Schedule */}
+              {(() => {
+                const selected = VERIFIED_OCT_2026_FD_PROFILES.find((p) => p.bankId === expandedBank) || VERIFIED_OCT_2026_FD_PROFILES[0];
+                return (
+                  <div className="rounded-lg border border-border bg-muted/20 p-4 space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-border/60 pb-3">
+                      <div>
+                        <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
+                          {selected.bankName} — Full Rate Schedule
+                        </h4>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Effective: {selected.effectiveDate} • {selected.compoundingFrequency}
+                        </p>
+                      </div>
+                      <a
+                        href={selected.officialSourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline self-start sm:self-auto"
+                      >
+                        Verify on {selected.shortName} official website
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </a>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Tenure Bucket</TableHead>
+                            <TableHead>General Public Rate (p.a.)</TableHead>
+                            <TableHead>Senior Citizen Rate (p.a.)</TableHead>
+                            <TableHead>Applicable Conditions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {selected.tenureBuckets.map((b) => (
+                            <TableRow key={b.tenureLabel}>
+                              <TableCell className="font-medium text-xs">{b.tenureLabel}</TableCell>
+                              <TableCell className="font-bold text-foreground text-xs">
+                                {b.regularRate.toFixed(2)}%
+                              </TableCell>
+                              <TableCell className="font-semibold text-emerald-600 dark:text-emerald-400 text-xs">
+                                {b.seniorRate.toFixed(2)}%
+                              </TableCell>
+                              <TableCell className="text-xs text-muted-foreground">
+                                {b.minMonths === 12 ? 'Standard 1-year benchmark' : 'Applicable card rate'}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
+          <div className="mt-4 rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground space-y-1">
+            <p className="font-medium text-foreground">Important Rate &amp; Methodology Disclosures:</p>
+            <p>
+              • <strong>Verified Official Sources:</strong> Rates are directly retrieved from official portals of State Bank of India, HDFC Bank, ICICI Bank, and RBL Bank applicable in October 2026.
+            </p>
+            <p>
+              • <strong>Deposit Classification:</strong> Rates apply strictly to retail domestic deposits (&lt; ₹3 Crore). Bulk deposits (₹3 Crore and above) and non-resident schemes (NRE/FCNR) have distinct schedules.
+            </p>
+            <p>
+              • <strong>Compounding &amp; Payout:</strong> Quarterly compounding applies to cumulative reinvestment term deposits. Premature withdrawal is subject to bank penalties and does not apply to non-callable products.
+            </p>
+          </div>
         </CardContent>
       </Card>
     </DashboardLayout>

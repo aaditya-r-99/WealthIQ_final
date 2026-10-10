@@ -6,10 +6,8 @@ import { PageHeader } from '@/components/page-header';
 import { MetricCard } from '@/components/metric-card';
 import { HealthScoreCard } from '@/components/health-score-card';
 import { RiskBadge } from '@/components/risk-badge';
-import { RecommendationCard } from '@/components/recommendation-card';
 import { ForecastChart } from '@/components/forecast-chart';
 import { ExpenseChart } from '@/components/expense-chart';
-import { MLPredictionCard } from '@/components/ml-prediction-card';
 import { LoadingState } from '@/components/state-components';
 import { BrandedLoadingScreen } from '@/components/branded-loading-screen';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,6 +28,8 @@ import {
   ChevronDown,
   ChevronUp,
   Calculator,
+  Scale,
+  CheckCircle2,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useNotifications } from '@/lib/notification-context';
@@ -40,12 +40,10 @@ import type {
   ExpenseChartData,
   HealthCategory,
   RiskLevel,
-  Recommendation,
 } from '@/lib/types';
 import {
   evaluateAndPersistFinancialScore,
   calculateFinancialForecast,
-  generatePersonalizedRecommendations,
   ScoreBreakdown,
   FinancialForecastResult,
   IncomeRow,
@@ -56,7 +54,6 @@ import {
   FDRow,
   ScoreRow,
 } from '@/lib/financial-engine';
-import { predictFinancialHealthML, MLPredictionResult } from '@/lib/ml-engine';
 import { formatCurrency, formatPercent, formatNumber, formatEmergencyFundMonths } from '@/lib/format';
 import Link from 'next/link';
 
@@ -93,10 +90,8 @@ export default function DashboardPage() {
     investment_score: 0,
   });
 
-  // Forecast, Recommendations & ML state
+  // Forecast state
   const [forecast, setForecast] = useState<FinancialForecastResult | null>(null);
-  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
-  const [mlPrediction, setMlPrediction] = useState<MLPredictionResult | null>(null);
   const [showScoreCalculation, setShowScoreCalculation] = useState(false);
 
   const fetchDashboardData = useCallback(
@@ -174,26 +169,14 @@ export default function DashboardPage() {
           latestScoreRow
         );
 
-        // Step 2: Deterministic Financial Forecast & Personalized Recommendations
+        // Step 2: Deterministic Financial Forecast
         const forecastResult = calculateFinancialForecast(evaluation.features, finData);
-        const recommendationsResult = generatePersonalizedRecommendations(
-          evaluation.features,
-          evaluation.health_score,
-          evaluation.spending_risk,
-          finData,
-          userId
-        );
-
-        // Step 3: Explainable Machine Learning Archetype Classification
-        const mlResult = predictFinancialHealthML(evaluation.features, finData);
 
         setHealthScore(evaluation.health_score);
         setHealthCategory(evaluation.health_category);
         setSpendingRisk(evaluation.spending_risk);
         setScoreBreakdown(evaluation.breakdown);
         setForecast(forecastResult);
-        setRecommendations(recommendationsResult);
-        setMlPrediction(mlResult);
 
         // Step 4: Evaluate real in-app notifications via stable ref
         evaluateNotificationsRef.current(
@@ -389,7 +372,7 @@ export default function DashboardPage() {
               <MetricCard
                 title="Health Category"
                 value={healthCategory}
-                subtitle="Calculated Model"
+                subtitle="5-Pillar Evaluation"
                 icon={<Sparkles className="h-4 w-4" />}
                 accent="primary"
               />
@@ -401,7 +384,7 @@ export default function DashboardPage() {
                   <RiskBadge level={spendingRisk} size="lg" />
                 </div>
                 <p className="mt-2 text-xs text-muted-foreground">
-                  Behavior-based evaluation
+                  Expense &amp; Debt Ratio Analysis
                 </p>
               </div>
               <MetricCard
@@ -476,11 +459,6 @@ export default function DashboardPage() {
               subtitle="Non-essential spending"
               accent="warning"
             />
-          </div>
-
-          {/* AI/ML Financial Health Assessment */}
-          <div className="mt-4">
-            <MLPredictionCard prediction={mlPrediction} />
           </div>
 
           {/* Financial Forecast Section */}
@@ -632,43 +610,143 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Score Breakdown & Transparency */}
-          <Card className="mt-4">
-            <CardHeader>
-              <CardTitle className="text-base">
-                How Your Health Score Is Calculated (Deterministic Rule-Based Score)
-              </CardTitle>
-              <p className="text-xs text-muted-foreground mt-1">
-                Transparent 0–100 score based on five weighted financial pillars and predefined benchmarks.
-              </p>
+          {/* Household Spending Benchmark Link Card */}
+          <Card className="mt-4 border-dashed">
+            <CardContent className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4">
+              <div className="space-y-0.5">
+                <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <Scale className="h-4 w-4" />
+                  Household Spending Benchmark (MoSPI HCES 2023–24)
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Estimate and compare typical monthly consumption expenditure for comparable Indian households.
+                </p>
+              </div>
+              <Button variant="outline" size="sm" className="self-start sm:self-auto shrink-0 text-xs" asChild>
+                <Link href="/household-benchmark">
+                  Explore Benchmark
+                  <ArrowRight className="ml-1.5 h-3 w-3" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Financial Health Score Breakdown & Actionable Drivers */}
+          <Card className="mt-4 border border-border">
+            <CardHeader className="pb-3">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                    Financial Health Score Breakdown &amp; Key Drivers
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Your overall score of <strong className="text-foreground">{healthScore}/100</strong> evaluates 5 core financial pillars to highlight strengths and focus areas.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Framework:</span>
+                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full border border-border bg-muted/40">
+                    5-Pillar Rubric
+                  </span>
+                </div>
+              </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            <CardContent className="space-y-5">
+              {/* Pillar Cards Grid */}
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
                 {scoreBreakdownItems.map((item) => {
                   const value = scoreBreakdown[item.key as keyof ScoreBreakdown] ?? 0;
+                  const status =
+                    value >= 80 ? 'Strong' : value >= 60 ? 'Moderate' : 'Needs Focus';
+                  const statusColor =
+                    value >= 80
+                      ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
+                      : value >= 60
+                      ? 'text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20'
+                      : 'text-rose-600 dark:text-rose-400 bg-rose-500/10 border-rose-500/20';
+
                   return (
-                    <div key={item.label} className="space-y-1.5">
+                    <div key={item.label} className="rounded-lg border border-border/80 bg-card p-3.5 space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">{item.label}</span>
-                        <span className="text-sm font-bold text-primary">
-                          {value}/100
+                        <span className="text-xs font-semibold text-foreground truncate">{item.label}</span>
+                        <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${statusColor}`}>
+                          {status}
                         </span>
                       </div>
-                      <div className="h-2 rounded-full bg-muted overflow-hidden">
+                      <div className="flex items-baseline justify-between pt-1">
+                        <span className="text-2xl font-bold tracking-tight text-foreground">
+                          {value}
+                        </span>
+                        <span className="text-[11px] text-muted-foreground font-medium">
+                          Weight: {item.weight}
+                        </span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-primary transition-all"
-                          style={{ width: `${value}%` }}
+                          className="h-full rounded-full bg-primary transition-all duration-500"
+                          style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
                         />
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        Weight: {item.weight}
-                      </p>
                     </div>
                   );
                 })}
               </div>
 
-              {/* Dynamic Example Calculation Expandable */}
+              {/* Meaningful Contributing Factors & Guidance */}
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-lg border border-border bg-muted/20 p-3.5 space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                    Key Contributing Strengths
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {savingsRate >= 0.2
+                      ? `Healthy monthly savings rate of ${formatPercent(savingsRate)}, generating continuous surplus for net worth growth.`
+                      : monthlyIncome > monthlyExpenses
+                      ? `Positive monthly cash surplus of ${formatCurrency(monthlyIncome - monthlyExpenses)} over recorded expenditures.`
+                      : `Active financial tracking across income streams and asset allocations.`}
+                  </p>
+                  {debtToIncome < 0.3 && (
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Conservative debt-to-income ratio ({formatPercent(debtToIncome)}), well below the 40% risk ceiling.
+                    </p>
+                  )}
+                </div>
+
+                <div className="rounded-lg border border-border bg-muted/20 p-3.5 space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                    <TrendingUp className="h-3.5 w-3.5 text-primary" />
+                    Recommended Actionable Steps
+                  </div>
+                  <ul className="text-xs text-muted-foreground space-y-1 leading-relaxed list-disc list-inside">
+                    {emergencyFundMonths < 3 ? (
+                      <li>
+                        Build liquid emergency reserves towards 3–6 months of essential living expenses (currently {formatEmergencyFundMonths(emergencyFundMonths)}).
+                      </li>
+                    ) : (
+                      <li>
+                        Emergency fund is funded at {formatEmergencyFundMonths(emergencyFundMonths)}. Maintain reserves in high-yield liquid accounts.
+                      </li>
+                    )}
+                    {debtToIncome >= 0.4 ? (
+                      <li>
+                        Target aggressive reduction of monthly loan repayments to bring debt-to-income below 40%.
+                      </li>
+                    ) : savingsRate < 0.2 ? (
+                      <li>
+                        Review non-essential discretionary expenses to target a 20%+ monthly savings rate.
+                      </li>
+                    ) : (
+                      <li>
+                        Continue disciplined asset accumulation and explore fixed deposits or systematic equity investments.
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Secondary Expandable Methodology Section */}
               <div className="border-t border-border/60 pt-3">
                 <Button
                   variant="ghost"
@@ -676,8 +754,8 @@ export default function DashboardPage() {
                   onClick={() => setShowScoreCalculation(!showScoreCalculation)}
                   className="text-xs font-medium text-muted-foreground hover:text-foreground"
                 >
-                  <Calculator className="mr-1.5 h-3.5 w-3.5" />
-                  {showScoreCalculation ? 'Hide Example Calculation' : 'Example calculation'}
+                  <Info className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
+                  {showScoreCalculation ? 'Hide Scoring Methodology' : 'View Scoring Methodology & Pillar Weights'}
                   {showScoreCalculation ? (
                     <ChevronUp className="ml-1 h-3.5 w-3.5" />
                   ) : (
@@ -688,98 +766,42 @@ export default function DashboardPage() {
                 {showScoreCalculation && (
                   <div className="mt-3 rounded-lg border border-border bg-muted/20 p-4 space-y-3 text-xs leading-relaxed">
                     <p className="font-semibold text-foreground">
-                      Dynamic Calculation from Your Current Pillar Scores:
+                      Deterministic Five-Pillar Scoring Rubric:
                     </p>
-                    <div className="font-mono text-xs bg-background/80 p-3.5 rounded-lg border border-border/60 space-y-3">
-                      <div>
-                        <div className="text-muted-foreground text-[11px] font-sans font-medium">Savings:</div>
-                        <div className="text-foreground">{scoreBreakdown.savings_score} × 25% = {formatPillarProduct(scoreBreakdown.savings_score, 0.25)}</div>
+                    <div className="grid gap-2 text-muted-foreground sm:grid-cols-2">
+                      <div className="rounded border bg-background/60 p-2.5 space-y-0.5">
+                        <span className="font-semibold text-foreground">1. Savings Behavior (25%)</span>
+                        <p>Evaluates monthly net savings rate against the 20%+ personal finance benchmark.</p>
                       </div>
-                      <div>
-                        <div className="text-muted-foreground text-[11px] font-sans font-medium">Expense:</div>
-                        <div className="text-foreground">{scoreBreakdown.expense_score} × 25% = {formatPillarProduct(scoreBreakdown.expense_score, 0.25)}</div>
+                      <div className="rounded border bg-background/60 p-2.5 space-y-0.5">
+                        <span className="font-semibold text-foreground">2. Expense Burden (25%)</span>
+                        <p>Assesses essential vs discretionary spending ratios and monthly budget sustainability.</p>
                       </div>
-                      <div>
-                        <div className="text-muted-foreground text-[11px] font-sans font-medium">Debt:</div>
-                        <div className="text-foreground">{scoreBreakdown.debt_score} × 20% = {formatPillarProduct(scoreBreakdown.debt_score, 0.20)}</div>
+                      <div className="rounded border bg-background/60 p-2.5 space-y-0.5">
+                        <span className="font-semibold text-foreground">3. Debt Burden (20%)</span>
+                        <p>Benchmarks monthly debt EMI against a 40% maximum debt-to-income threshold.</p>
                       </div>
-                      <div>
-                        <div className="text-muted-foreground text-[11px] font-sans font-medium">Emergency Fund:</div>
-                        <div className="text-foreground">{scoreBreakdown.emergency_score} × 15% = {formatPillarProduct(scoreBreakdown.emergency_score, 0.15)}</div>
+                      <div className="rounded border bg-background/60 p-2.5 space-y-0.5">
+                        <span className="font-semibold text-foreground">4. Emergency Fund (15%)</span>
+                        <p>Measures liquid reserves against the recommended 3 to 6 months of essential expenses.</p>
                       </div>
-                      <div>
-                        <div className="text-muted-foreground text-[11px] font-sans font-medium">Investments:</div>
-                        <div className="text-foreground">{scoreBreakdown.investment_score} × 15% = {formatPillarProduct(scoreBreakdown.investment_score, 0.15)}</div>
-                      </div>
-                      <div className="pt-2 border-t border-border/50">
-                        <div className="text-muted-foreground text-[11px] font-sans font-medium">Total:</div>
-                        <div className="text-foreground font-semibold">
-                          {formatPillarProduct(scoreBreakdown.savings_score, 0.25)} + {formatPillarProduct(scoreBreakdown.expense_score, 0.25)} + {formatPillarProduct(scoreBreakdown.debt_score, 0.20)} + {formatPillarProduct(scoreBreakdown.emergency_score, 0.15)} + {formatPillarProduct(scoreBreakdown.investment_score, 0.15)} = {healthScore}
-                        </div>
-                      </div>
-                      <div className="pt-1">
-                        <div className="text-muted-foreground text-[11px] font-sans font-medium">Therefore:</div>
-                        <div className="text-primary font-bold text-sm">
-                          Financial Health Score = {healthScore} / 100
-                        </div>
+                      <div className="rounded border bg-background/60 p-2.5 space-y-0.5 col-span-full sm:col-span-1">
+                        <span className="font-semibold text-foreground">5. Investments &amp; Assets (15%)</span>
+                        <p>Rewards diversified asset accumulation across fixed deposits, equities, and investments.</p>
                       </div>
                     </div>
-                    <p className="text-[11px] text-muted-foreground italic">
-                      Calculated dynamically from your actual recorded pillar values.
+                    <p className="text-[11px] text-muted-foreground">
+                      Note: The Financial Health Score is computed deterministically from your verified financial records using transparent arithmetic benchmarks. It is not an opaque machine learning prediction.
                     </p>
                   </div>
                 )}
               </div>
-
-              <div className="flex items-start gap-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
-                <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                <div className="text-xs text-foreground/80 space-y-1">
-                  <p>
-                    <span className="font-semibold">Deterministic Scoring Engine:</span> Your Financial Health Score (0–100) is a transparent rule-based scoring rubric calculated directly from your real financial records across 5 weighted pillars:
-                    Savings Behavior (25%), Expense Burden (25%), Debt Burden (20%), Emergency Fund (15%), and Investments &amp; Assets (15%). This deterministic calculation is distinct from the statistical ML archetype classifier.
-                  </p>
-                  <p>
-                    <span className="font-semibold">Spending Risk Assessment:</span> Evaluated deterministically from your expense-to-income ratio (&gt;85% High, &gt;65% Med), discretionary expense ratio (&gt;25% Med), debt-to-income ratio (&gt;45% High, &gt;30% Med), and savings rate (&lt;10% Med).
-                  </p>
-                </div>
-              </div>
             </CardContent>
           </Card>
-
-          {/* Personalized Recommendations */}
-          <div className="mt-6">
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold">Personalized Recommendations</h2>
-              <p className="text-xs text-muted-foreground">
-                Deterministic, rule-based financial guidance generated from your real financial metrics and health score. (Rule-based recommendations, not ML predictions).
-              </p>
-            </div>
-            {recommendations.length === 0 ? (
-              <Card>
-                <CardContent className="py-8 text-center">
-                  <p className="text-sm font-medium text-foreground">No active recommendations</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Your financial metrics are balanced. Continue maintaining your current financial rhythm.
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {recommendations.slice(0, 6).map((rec) => (
-                  <RecommendationCard key={rec.id} recommendation={rec} />
-                ))}
-              </div>
-            )}
-          </div>
         </>
       )}
     </DashboardLayout>
   );
-}
-
-function formatPillarProduct(score: number, weight: number): string {
-  const prod = score * weight;
-  return Number.isInteger(prod) ? prod.toString() : (Math.round(prod * 10) / 10).toString();
 }
 
 const scoreBreakdownItems = [

@@ -1,0 +1,112 @@
+[
+  {
+    "raw_text": "PETA #7420 (Bank Transfer)",
+    "category": "Charity & Donations",
+    "cleaned_text": "peta 7420 bank transfer"
+  },
+  {
+    "raw_text": "United Way #9299 Store",
+    "category": "Charity & Donations",
+    "cleaned_text": "united way 9299 store"
+  },
+  {
+    "raw_text": "CrossFit #6635",
+    "category": "Entertainment & Recreation",
+    "cleaned_text": "crossfit 6635"
+  },
+  {
+    "raw_text": "SoulCycle #5633 Store",
+    "category": "Entertainment & Recreation",
+    "cleaned_text": "soulcycle 5633 store"
+  },
+  {
+    "raw_text": "Bank #1280",
+    "category": "Financial Services",
+    "cleaned_text": "bank 1280"
+  },
+  {
+    "raw_text": "Comerica #3792 - Night",
+    "category": "Financial Services",
+    "cleaned_text": "comerica 3792 - night"
+  },
+  {
+    "raw_text": "Popeyes #2837",
+    "category": "Food & Dining",
+    "cleaned_text": "popeyes 2837"
+  },
+  {
+    "raw_text": "Cold Stone Creamery #3082 - Dinner Time",
+    "category": "Food & Dining",
+    "cleaned_text": "cold stone creamery 3082 - dinner time"
+  },
+  {
+    "raw_text": "Municipal Building #6945 - USA",
+    "category": "Government & Legal",
+    "cleaned_text": "municipal building 6945 - usa"
+  },
+  {
+    "raw_text": "Service Center (Mobile)",
+    "category": "Government & Legal",
+    "cleaned_text": "service center mobile"
+  },
+  {
+    "raw_text": "X-Ray #5918 - USA",
+    "category": "Healthcare & Medical",
+    "cleaned_text": "x-ray 5918 - usa"
+  },
+  {
+    "raw_text": "Occupational Therapy #4073",
+    "category": "Healthcare & Medical",
+    "cleaned_text": "occupational therapy 4073"
+  },
+  {
+    "raw_text": "Paid Rs 420 to Monthly house rent to Gupta for Feb via UPI",
+    "category": "Housing & Rent",
+    "cleaned_text": "paid 420 to monthly house rent to gupta for feb via upi"
+  },
+  {
+    "raw_text": "Paid Rs 850 to Residential welfare association RWA maintenance via UPI",
+    "category": "Housing & Rent",
+    "cleaned_text": "paid 850 to residential welfare association rwa maintenance via upi"
+  },
+  {
+    "raw_text": "Credit Store",
+    "category": "Income",
+    "cleaned_text": "credit store"
+  },
+  {
+    "raw_text": "Side Hustle #8053 Strip Mall",
+    "category": "Income",
+    "cleaned_text": "side hustle 8053 strip mall"
+  },
+  {
+    "raw_text": "Amazon #8362",
+    "category": "Shopping & Retail",
+    "cleaned_text": "amazon 8362"
+  },
+  {
+    "raw_text": "Post Office #7341 Store Airport",
+    "category": "Shopping & Retail",
+    "cleaned_text": "post office 7341 store airport"
+  },
+  {
+    "raw_text": "Hertz #6461 Hospital",
+    "category": "Transportation",
+    "cleaned_text": "hertz 6461 hospital"
+  },
+  {
+    "raw_text": "Dollar #1904 Store (Contactless)",
+    "category": "Transportation",
+    "cleaned_text": "dollar 1904 store contactless"
+  },
+  {
+    "raw_text": "Windstream #8187",
+    "category": "Utilities & Services",
+    "cleaned_text": "windstream 8187"
+  },
+  {
+    "raw_text": "Gas Company Store TXN492231",
+    "category": "Utilities & Services",
+    "cleaned_text": "gas company store"
+  }
+]

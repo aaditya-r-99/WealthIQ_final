@@ -1,0 +1,650 @@
+{
+  "01_rural": {
+    "state": "01",
+    "sector": "rural",
+    "weighted_mean_mpce": 8812.48,
+    "median_mpce": 8000.0,
+    "p25_mpce": 6300.0,
+    "p75_mpce": 10250.0,
+    "sample_size": 1782
+  },
+  "01_urban": {
+    "state": "01",
+    "sector": "urban",
+    "weighted_mean_mpce": 13126.94,
+    "median_mpce": 11250.0,
+    "p25_mpce": 8357.14,
+    "p75_mpce": 16200.0,
+    "sample_size": 1800
+  },
+  "02_rural": {
+    "state": "02",
+    "sector": "rural",
+    "weighted_mean_mpce": 11199.35,
+    "median_mpce": 9250.0,
+    "p25_mpce": 7083.33,
+    "p75_mpce": 13066.67,
+    "sample_size": 1355
+  },
+  "02_urban": {
+    "state": "02",
+    "sector": "urban",
+    "weighted_mean_mpce": 18894.68,
+    "median_mpce": 16100.0,
+    "p25_mpce": 11166.67,
+    "p75_mpce": 22920.0,
+    "sample_size": 1051
+  },
+  "03_rural": {
+    "state": "03",
+    "sector": "rural",
+    "weighted_mean_mpce": 11671.41,
+    "median_mpce": 10125.0,
+    "p25_mpce": 7714.29,
+    "p75_mpce": 13500.0,
+    "sample_size": 3161
+  },
+  "03_urban": {
+    "state": "03",
+    "sector": "urban",
+    "weighted_mean_mpce": 15626.8,
+    "median_mpce": 13500.0,
+    "p25_mpce": 9600.0,
+    "p75_mpce": 19000.0,
+    "sample_size": 2810
+  },
+  "04_rural": {
+    "state": "04",
+    "sector": "rural",
+    "weighted_mean_mpce": 15787.32,
+    "median_mpce": 13500.0,
+    "p25_mpce": 10250.0,
+    "p75_mpce": 18750.0,
+    "sample_size": 359
+  },
+  "04_urban": {
+    "state": "04",
+    "sector": "urban",
+    "weighted_mean_mpce": 27771.78,
+    "median_mpce": 24250.0,
+    "p25_mpce": 13500.0,
+    "p75_mpce": 36000.0,
+    "sample_size": 359
+  },
+  "05_rural": {
+    "state": "05",
+    "sector": "rural",
+    "weighted_mean_mpce": 8400.78,
+    "median_mpce": 7500.0,
+    "p25_mpce": 5857.14,
+    "p75_mpce": 9750.0,
+    "sample_size": 1693
+  },
+  "05_urban": {
+    "state": "05",
+    "sector": "urban",
+    "weighted_mean_mpce": 14242.86,
+    "median_mpce": 11766.67,
+    "p25_mpce": 8600.0,
+    "p75_mpce": 17000.0,
+    "sample_size": 1056
+  },
+  "06_rural": {
+    "state": "06",
+    "sector": "rural",
+    "weighted_mean_mpce": 11470.75,
+    "median_mpce": 10250.0,
+    "p25_mpce": 7750.0,
+    "p75_mpce": 13750.0,
+    "sample_size": 2785
+  },
+  "06_urban": {
+    "state": "06",
+    "sector": "urban",
+    "weighted_mean_mpce": 20205.5,
+    "median_mpce": 15000.0,
+    "p25_mpce": 10250.0,
+    "p75_mpce": 24000.0,
+    "sample_size": 2478
+  },
+  "07_rural": {
+    "state": "07",
+    "sector": "rural",
+    "weighted_mean_mpce": 11590.15,
+    "median_mpce": 10250.0,
+    "p25_mpce": 8000.0,
+    "p75_mpce": 13500.0,
+    "sample_size": 310
+  },
+  "07_urban": {
+    "state": "07",
+    "sector": "urban",
+    "weighted_mean_mpce": 14340.09,
+    "median_mpce": 11000.0,
+    "p25_mpce": 7833.33,
+    "p75_mpce": 16500.0,
+    "sample_size": 3049
+  },
+  "08_rural": {
+    "state": "08",
+    "sector": "rural",
+    "weighted_mean_mpce": 8403.17,
+    "median_mpce": 7500.0,
+    "p25_mpce": 5750.0,
+    "p75_mpce": 10000.0,
+    "sample_size": 8769
+  },
+  "08_urban": {
+    "state": "08",
+    "sector": "urban",
+    "weighted_mean_mpce": 14594.84,
+    "median_mpce": 12000.0,
+    "p25_mpce": 8600.0,
+    "p75_mpce": 17666.67,
+    "sample_size": 4378
+  },
+  "09_rural": {
+    "state": "09",
+    "sector": "rural",
+    "weighted_mean_mpce": 5860.63,
+    "median_mpce": 5166.67,
+    "p25_mpce": 4000.0,
+    "p75_mpce": 6833.33,
+    "sample_size": 19664
+  },
+  "09_urban": {
+    "state": "09",
+    "sector": "urban",
+    "weighted_mean_mpce": 10201.43,
+    "median_mpce": 7600.0,
+    "p25_mpce": 5390.0,
+    "p75_mpce": 11500.0,
+    "sample_size": 10644
+  },
+  "10_rural": {
+    "state": "10",
+    "sector": "rural",
+    "weighted_mean_mpce": 6451.64,
+    "median_mpce": 6000.0,
+    "p25_mpce": 4750.0,
+    "p75_mpce": 7500.0,
+    "sample_size": 13656
+  },
+  "10_urban": {
+    "state": "10",
+    "sector": "urban",
+    "weighted_mean_mpce": 8354.09,
+    "median_mpce": 7000.0,
+    "p25_mpce": 5400.0,
+    "p75_mpce": 9600.0,
+    "sample_size": 3599
+  },
+  "11_rural": {
+    "state": "11",
+    "sector": "rural",
+    "weighted_mean_mpce": 8730.75,
+    "median_mpce": 7500.0,
+    "p25_mpce": 6000.0,
+    "p75_mpce": 10000.0,
+    "sample_size": 1439
+  },
+  "11_urban": {
+    "state": "11",
+    "sector": "urban",
+    "weighted_mean_mpce": 15074.46,
+    "median_mpce": 12000.0,
+    "p25_mpce": 8250.0,
+    "p75_mpce": 19500.0,
+    "sample_size": 719
+  },
+  "12_rural": {
+    "state": "12",
+    "sector": "rural",
+    "weighted_mean_mpce": 9054.12,
+    "median_mpce": 7750.0,
+    "p25_mpce": 5986.0,
+    "p75_mpce": 10800.0,
+    "sample_size": 2653
+  },
+  "12_urban": {
+    "state": "12",
+    "sector": "urban",
+    "weighted_mean_mpce": 16671.98,
+    "median_mpce": 14000.0,
+    "p25_mpce": 10000.0,
+    "p75_mpce": 20400.0,
+    "sample_size": 1420
+  },
+  "13_rural": {
+    "state": "13",
+    "sector": "rural",
+    "weighted_mean_mpce": 12335.53,
+    "median_mpce": 11175.0,
+    "p25_mpce": 8966.67,
+    "p75_mpce": 14560.0,
+    "sample_size": 1962
+  },
+  "13_urban": {
+    "state": "13",
+    "sector": "urban",
+    "weighted_mean_mpce": 17489.88,
+    "median_mpce": 16000.0,
+    "p25_mpce": 12000.0,
+    "p75_mpce": 21300.0,
+    "sample_size": 1080
+  },
+  "14_rural": {
+    "state": "14",
+    "sector": "rural",
+    "weighted_mean_mpce": 8745.18,
+    "median_mpce": 8320.0,
+    "p25_mpce": 6000.0,
+    "p75_mpce": 10750.0,
+    "sample_size": 1637
+  },
+  "14_urban": {
+    "state": "14",
+    "sector": "urban",
+    "weighted_mean_mpce": 10544.19,
+    "median_mpce": 9750.0,
+    "p25_mpce": 7285.71,
+    "p75_mpce": 13000.0,
+    "sample_size": 2607
+  },
+  "15_rural": {
+    "state": "15",
+    "sector": "rural",
+    "weighted_mean_mpce": 7841.1,
+    "median_mpce": 6428.57,
+    "p25_mpce": 4200.0,
+    "p75_mpce": 10000.0,
+    "sample_size": 1440
+  },
+  "15_urban": {
+    "state": "15",
+    "sector": "urban",
+    "weighted_mean_mpce": 10367.8,
+    "median_mpce": 9200.0,
+    "p25_mpce": 6000.0,
+    "p75_mpce": 13500.0,
+    "sample_size": 2160
+  },
+  "16_rural": {
+    "state": "16",
+    "sector": "rural",
+    "weighted_mean_mpce": 10424.61,
+    "median_mpce": 9500.0,
+    "p25_mpce": 7500.0,
+    "p75_mpce": 12250.0,
+    "sample_size": 3240
+  },
+  "16_urban": {
+    "state": "16",
+    "sector": "urban",
+    "weighted_mean_mpce": 14189.54,
+    "median_mpce": 12500.0,
+    "p25_mpce": 9500.0,
+    "p75_mpce": 17250.0,
+    "sample_size": 1800
+  },
+  "17_rural": {
+    "state": "17",
+    "sector": "rural",
+    "weighted_mean_mpce": 7766.92,
+    "median_mpce": 7000.0,
+    "p25_mpce": 5500.0,
+    "p75_mpce": 9000.0,
+    "sample_size": 2154
+  },
+  "17_urban": {
+    "state": "17",
+    "sector": "urban",
+    "weighted_mean_mpce": 14665.17,
+    "median_mpce": 12500.0,
+    "p25_mpce": 9000.0,
+    "p75_mpce": 18000.0,
+    "sample_size": 1062
+  },
+  "18_rural": {
+    "state": "18",
+    "sector": "rural",
+    "weighted_mean_mpce": 7406.38,
+    "median_mpce": 6750.0,
+    "p25_mpce": 4984.0,
+    "p75_mpce": 9000.0,
+    "sample_size": 6053
+  },
+  "18_urban": {
+    "state": "18",
+    "sector": "urban",
+    "weighted_mean_mpce": 11432.71,
+    "median_mpce": 9750.0,
+    "p25_mpce": 6625.0,
+    "p75_mpce": 14140.0,
+    "sample_size": 2519
+  },
+  "19_rural": {
+    "state": "19",
+    "sector": "rural",
+    "weighted_mean_mpce": 8591.76,
+    "median_mpce": 7833.33,
+    "p25_mpce": 6225.0,
+    "p75_mpce": 10000.0,
+    "sample_size": 10706
+  },
+  "19_urban": {
+    "state": "19",
+    "sector": "urban",
+    "weighted_mean_mpce": 15324.51,
+    "median_mpce": 12500.0,
+    "p25_mpce": 9000.0,
+    "p75_mpce": 18000.0,
+    "sample_size": 7414
+  },
+  "20_rural": {
+    "state": "20",
+    "sector": "rural",
+    "weighted_mean_mpce": 5246.16,
+    "median_mpce": 4900.0,
+    "p25_mpce": 3636.36,
+    "p75_mpce": 6366.67,
+    "sample_size": 3866
+  },
+  "20_urban": {
+    "state": "20",
+    "sector": "urban",
+    "weighted_mean_mpce": 11595.53,
+    "median_mpce": 9000.0,
+    "p25_mpce": 6000.0,
+    "p75_mpce": 14000.0,
+    "sample_size": 2465
+  },
+  "21_rural": {
+    "state": "21",
+    "sector": "rural",
+    "weighted_mean_mpce": 7895.04,
+    "median_mpce": 7200.0,
+    "p25_mpce": 5500.0,
+    "p75_mpce": 9200.0,
+    "sample_size": 6768
+  },
+  "21_urban": {
+    "state": "21",
+    "sector": "urban",
+    "weighted_mean_mpce": 16249.08,
+    "median_mpce": 12875.0,
+    "p25_mpce": 8666.67,
+    "p75_mpce": 21600.0,
+    "sample_size": 2445
+  },
+  "22_rural": {
+    "state": "22",
+    "sector": "rural",
+    "weighted_mean_mpce": 5075.08,
+    "median_mpce": 4833.33,
+    "p25_mpce": 3257.14,
+    "p75_mpce": 6500.0,
+    "sample_size": 2856
+  },
+  "22_urban": {
+    "state": "22",
+    "sector": "urban",
+    "weighted_mean_mpce": 10837.6,
+    "median_mpce": 8625.0,
+    "p25_mpce": 6125.0,
+    "p75_mpce": 12800.0,
+    "sample_size": 2112
+  },
+  "23_rural": {
+    "state": "23",
+    "sector": "rural",
+    "weighted_mean_mpce": 6718.22,
+    "median_mpce": 6000.0,
+    "p25_mpce": 4700.0,
+    "p75_mpce": 8000.0,
+    "sample_size": 8426
+  },
+  "23_urban": {
+    "state": "23",
+    "sector": "urban",
+    "weighted_mean_mpce": 11284.25,
+    "median_mpce": 9000.0,
+    "p25_mpce": 6600.0,
+    "p75_mpce": 13500.0,
+    "sample_size": 5679
+  },
+  "24_rural": {
+    "state": "24",
+    "sector": "rural",
+    "weighted_mean_mpce": 9252.26,
+    "median_mpce": 8500.0,
+    "p25_mpce": 6275.0,
+    "p75_mpce": 11250.0,
+    "sample_size": 5699
+  },
+  "24_urban": {
+    "state": "24",
+    "sector": "urban",
+    "weighted_mean_mpce": 16527.03,
+    "median_mpce": 14300.0,
+    "p25_mpce": 10333.33,
+    "p75_mpce": 20250.0,
+    "sample_size": 5572
+  },
+  "25_rural": {
+    "state": "25",
+    "sector": "rural",
+    "weighted_mean_mpce": 10762.05,
+    "median_mpce": 9300.0,
+    "p25_mpce": 6825.0,
+    "p75_mpce": 12666.67,
+    "sample_size": 354
+  },
+  "25_urban": {
+    "state": "25",
+    "sector": "urban",
+    "weighted_mean_mpce": 15228.02,
+    "median_mpce": 13200.0,
+    "p25_mpce": 10800.0,
+    "p75_mpce": 17400.0,
+    "sample_size": 344
+  },
+  "27_rural": {
+    "state": "27",
+    "sector": "rural",
+    "weighted_mean_mpce": 8319.82,
+    "median_mpce": 7250.0,
+    "p25_mpce": 5500.0,
+    "p75_mpce": 9733.33,
+    "sample_size": 11629
+  },
+  "27_urban": {
+    "state": "27",
+    "sector": "urban",
+    "weighted_mean_mpce": 16755.55,
+    "median_mpce": 13600.0,
+    "p25_mpce": 9500.0,
+    "p75_mpce": 20250.0,
+    "sample_size": 11117
+  },
+  "28_rural": {
+    "state": "28",
+    "sector": "rural",
+    "weighted_mean_mpce": 11029.34,
+    "median_mpce": 10333.33,
+    "p25_mpce": 8200.0,
+    "p75_mpce": 13000.0,
+    "sample_size": 6306
+  },
+  "28_urban": {
+    "state": "28",
+    "sector": "urban",
+    "weighted_mean_mpce": 15041.53,
+    "median_mpce": 13125.0,
+    "p25_mpce": 9666.67,
+    "p75_mpce": 18000.0,
+    "sample_size": 4159
+  },
+  "29_rural": {
+    "state": "29",
+    "sector": "rural",
+    "weighted_mean_mpce": 9411.61,
+    "median_mpce": 7900.0,
+    "p25_mpce": 6000.0,
+    "p75_mpce": 10666.67,
+    "sample_size": 6728
+  },
+  "29_urban": {
+    "state": "29",
+    "sector": "urban",
+    "weighted_mean_mpce": 18139.75,
+    "median_mpce": 14000.0,
+    "p25_mpce": 9000.0,
+    "p75_mpce": 23100.0,
+    "sample_size": 5805
+  },
+  "30_rural": {
+    "state": "30",
+    "sector": "rural",
+    "weighted_mean_mpce": 13049.03,
+    "median_mpce": 12000.0,
+    "p25_mpce": 9600.0,
+    "p75_mpce": 15000.0,
+    "sample_size": 360
+  },
+  "30_urban": {
+    "state": "30",
+    "sector": "urban",
+    "weighted_mean_mpce": 17690.13,
+    "median_mpce": 15000.0,
+    "p25_mpce": 12000.0,
+    "p75_mpce": 21000.0,
+    "sample_size": 360
+  },
+  "31_rural": {
+    "state": "31",
+    "sector": "rural",
+    "weighted_mean_mpce": 11474.02,
+    "median_mpce": 9714.29,
+    "p25_mpce": 7666.67,
+    "p75_mpce": 14000.0,
+    "sample_size": 249
+  },
+  "31_urban": {
+    "state": "31",
+    "sector": "urban",
+    "weighted_mean_mpce": 15519.23,
+    "median_mpce": 13000.0,
+    "p25_mpce": 9100.0,
+    "p75_mpce": 18750.0,
+    "sample_size": 356
+  },
+  "32_rural": {
+    "state": "32",
+    "sector": "rural",
+    "weighted_mean_mpce": 15394.06,
+    "median_mpce": 13625.0,
+    "p25_mpce": 10250.0,
+    "p75_mpce": 18000.0,
+    "sample_size": 3883
+  },
+  "32_urban": {
+    "state": "32",
+    "sector": "urban",
+    "weighted_mean_mpce": 17499.95,
+    "median_mpce": 15000.0,
+    "p25_mpce": 11250.0,
+    "p75_mpce": 21000.0,
+    "sample_size": 3517
+  },
+  "33_rural": {
+    "state": "33",
+    "sector": "rural",
+    "weighted_mean_mpce": 11156.8,
+    "median_mpce": 10250.0,
+    "p25_mpce": 7350.0,
+    "p75_mpce": 13500.0,
+    "sample_size": 7484
+  },
+  "33_urban": {
+    "state": "33",
+    "sector": "urban",
+    "weighted_mean_mpce": 16138.4,
+    "median_mpce": 13500.0,
+    "p25_mpce": 9900.0,
+    "p75_mpce": 19875.0,
+    "sample_size": 7008
+  },
+  "34_rural": {
+    "state": "34",
+    "sector": "rural",
+    "weighted_mean_mpce": 13993.85,
+    "median_mpce": 12666.67,
+    "p25_mpce": 10200.0,
+    "p75_mpce": 15875.0,
+    "sample_size": 359
+  },
+  "34_urban": {
+    "state": "34",
+    "sector": "urban",
+    "weighted_mean_mpce": 17849.76,
+    "median_mpce": 16666.67,
+    "p25_mpce": 12625.0,
+    "p75_mpce": 21000.0,
+    "sample_size": 718
+  },
+  "35_rural": {
+    "state": "35",
+    "sector": "rural",
+    "weighted_mean_mpce": 15189.53,
+    "median_mpce": 13500.0,
+    "p25_mpce": 10250.0,
+    "p75_mpce": 18000.0,
+    "sample_size": 641
+  },
+  "35_urban": {
+    "state": "35",
+    "sector": "urban",
+    "weighted_mean_mpce": 19710.65,
+    "median_mpce": 17000.0,
+    "p25_mpce": 13500.0,
+    "p75_mpce": 24000.0,
+    "sample_size": 359
+  },
+  "36_rural": {
+    "state": "36",
+    "sector": "rural",
+    "weighted_mean_mpce": 11951.07,
+    "median_mpce": 11000.0,
+    "p25_mpce": 8425.0,
+    "p75_mpce": 14466.67,
+    "sample_size": 3571
+  },
+  "36_urban": {
+    "state": "36",
+    "sector": "urban",
+    "weighted_mean_mpce": 20128.39,
+    "median_mpce": 17600.0,
+    "p25_mpce": 12400.0,
+    "p75_mpce": 26625.0,
+    "sample_size": 3215
+  },
+  "37_rural": {
+    "state": "37",
+    "sector": "rural",
+    "weighted_mean_mpce": 8952.81,
+    "median_mpce": 8800.0,
+    "p25_mpce": 7000.0,
+    "p75_mpce": 10250.0,
+    "sample_size": 360
+  },
+  "37_urban": {
+    "state": "37",
+    "sector": "urban",
+    "weighted_mean_mpce": 11462.14,
+    "median_mpce": 10250.0,
+    "p25_mpce": 8000.0,
+    "p75_mpce": 14000.0,
+    "sample_size": 360
+  }
+}

@@ -27,9 +27,27 @@ import { LoadingState, EmptyState } from '@/components/state-components';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase/client';
 import type { Database } from '@/lib/supabase/types';
+import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
+import { classifyTransaction } from '@/lib/transaction-classifier';
 import { formatCurrency, formatDate } from '@/lib/format';
+import { getRecordMonth, getCurrentCalendarMonth, formatMonthDisplay } from '@/lib/financial-engine';
 import type { ExpenseType, ExpenseChartData } from '@/lib/types';
-import { Plus, TrendingDown, Trash2, Pencil, CheckCircle2, AlertCircle, Loader2, X } from 'lucide-react';
+import {
+  Plus,
+  TrendingDown,
+  Trash2,
+  Pencil,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  X,
+  Sparkles,
+  AlertTriangle,
+  ArrowRight,
+  Info,
+  Calendar,
+} from 'lucide-react';
 
 type ExpenseRow = Database['public']['Tables']['expense_records']['Row'];
 
@@ -46,7 +64,7 @@ const expenseCategories = [
 ];
 
 export default function ExpensesPage() {
-  const { user, authState } = useAuth();
+  const { user, session, authState } = useAuth();
   const [records, setRecords] = useState<ExpenseRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -54,6 +72,19 @@ export default function ExpensesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState<string>(() => getCurrentCalendarMonth());
+
+  const [classifying, setClassifying] = useState(false);
+  const [suggestionNotice, setSuggestionNotice] = useState<{
+    type: 'success' | 'review' | 'income' | 'unavailable' | 'info';
+    category?: string | null;
+    expenseType?: ExpenseType | null;
+    method?: string;
+    confidence?: number | null;
+    userGuidance?: string | null;
+    rawCategory?: string | null;
+    needsReview?: boolean;
+  } | null>(null);
 
   const [formData, setFormData] = useState({
     category: 'Housing',
@@ -109,6 +140,89 @@ export default function ExpensesPage() {
       description: '',
     });
     setEditingId(null);
+    setSuggestionNotice(null);
+  };
+
+  const handleSuggestCategory = async () => {
+    const desc = formData.description.trim();
+    if (!desc) {
+      setSuggestionNotice({
+        type: 'info',
+        userGuidance: 'Enter a transaction description first to request a category suggestion.',
+      });
+      return;
+    }
+
+    if (desc.length > 500) {
+      setSuggestionNotice({
+        type: 'info',
+        userGuidance: 'Transaction description must be 500 characters or fewer.',
+      });
+      return;
+    }
+
+    setClassifying(true);
+    setSuggestionNotice(null);
+
+    try {
+      const result = await classifyTransaction(desc, {
+        accessToken: session?.access_token,
+      });
+
+      if (!result.available) {
+        setSuggestionNotice({
+          type: 'unavailable',
+          userGuidance:
+            result.userGuidance ||
+            'Classifier service is currently offline. Manual category selection remains available.',
+        });
+        return;
+      }
+
+      if (result.isIncome) {
+        // Classifier predicted income!
+        // Do NOT set as expense category.
+        // Provide helpful income guidance and allow user to switch to Income module or dismiss.
+        setSuggestionNotice({
+          type: 'income',
+          method: result.method,
+          confidence: result.confidence,
+          userGuidance:
+            result.userGuidance ||
+            'This transaction appears to be income. Consider recording it in the Income module instead of Expenses.',
+        });
+        return;
+      }
+
+      if (result.category) {
+        // Populate the editable category and suggested expense type
+        setFormData((prev) => ({
+          ...prev,
+          category: result.category!,
+          expense_type: result.suggestedExpenseType || prev.expense_type,
+        }));
+
+        setSuggestionNotice({
+          type: result.needsReview ? 'review' : 'success',
+          category: result.category,
+          expenseType: result.suggestedExpenseType,
+          method: result.method,
+          confidence: result.confidence,
+          needsReview: result.needsReview,
+          userGuidance: result.userGuidance,
+          rawCategory: result.rawCategory,
+        });
+      }
+    } catch {
+      // Graceful fallback - never throw or break form
+      setSuggestionNotice({
+        type: 'unavailable',
+        userGuidance:
+          'Classifier service encountered a network error. You can select your category manually.',
+      });
+    } finally {
+      setClassifying(false);
+    }
   };
 
   const handleStartEdit = (record: ExpenseRow) => {
@@ -122,6 +236,7 @@ export default function ExpensesPage() {
     });
     setSuccessMessage(null);
     setErrorMessage(null);
+    setSuggestionNotice(null);
     window.scrollTo({ top: 250, behavior: 'smooth' });
   };
 
@@ -232,20 +347,41 @@ export default function ExpensesPage() {
     }
   };
 
-  const totalEssential = records
-    .filter((e) => e.expense_type === 'essential')
-    .reduce((sum, e) => sum + Number(e.amount), 0);
+  const availableMonths = useMemo(() => {
+    const current = getCurrentCalendarMonth();
+    const monthSet = new Set<string>();
+    monthSet.add(current);
+    for (const rec of records) {
+      const m = getRecordMonth(rec.record_date);
+      if (m) monthSet.add(m);
+    }
+    return Array.from(monthSet).sort().reverse();
+  }, [records]);
 
-  const totalDiscretionary = records
-    .filter((e) => e.expense_type === 'discretionary')
-    .reduce((sum, e) => sum + Number(e.amount), 0);
+  // Filter records strictly by selected calendar month (or 'all' if selected)
+  const monthlyRecords = useMemo(() => {
+    if (selectedMonth === 'all') return records;
+    return records.filter((r) => getRecordMonth(r.record_date) === selectedMonth);
+  }, [records, selectedMonth]);
+
+  const totalEssential = useMemo(() => {
+    return monthlyRecords
+      .filter((e) => e.expense_type === 'essential')
+      .reduce((sum, e) => sum + Number(e.amount), 0);
+  }, [monthlyRecords]);
+
+  const totalDiscretionary = useMemo(() => {
+    return monthlyRecords
+      .filter((e) => e.expense_type === 'discretionary')
+      .reduce((sum, e) => sum + Number(e.amount), 0);
+  }, [monthlyRecords]);
 
   const total = totalEssential + totalDiscretionary;
 
-  // Compute category chart data from real database records
+  // Compute category chart data strictly from filtered monthly records
   const chartData: ExpenseChartData[] = useMemo(() => {
     const categoryMap = new Map<string, { amount: number; type: ExpenseType }>();
-    for (const rec of records) {
+    for (const rec of monthlyRecords) {
       const current = categoryMap.get(rec.category);
       if (current) {
         current.amount += Number(rec.amount);
@@ -261,7 +397,7 @@ export default function ExpensesPage() {
       amount,
       type,
     }));
-  }, [records]);
+  }, [monthlyRecords]);
 
   return (
     <DashboardLayout>
@@ -280,12 +416,53 @@ export default function ExpensesPage() {
         </Button>
       </PageHeader>
 
+      {/* Month selection filter bar */}
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-lg border bg-card p-3 shadow-sm">
+        <div className="flex flex-wrap items-center gap-2">
+          <Calendar className="h-4 w-4 text-primary" />
+          <span className="text-sm font-medium text-foreground">
+            Monthly Spending Period:
+          </span>
+          <span className="text-sm font-semibold text-primary">
+            {selectedMonth === 'all' ? 'All Recorded Expenses' : formatMonthDisplay(selectedMonth)}
+          </span>
+          {selectedMonth === getCurrentCalendarMonth() && (
+            <Badge variant="outline" className="text-[11px] font-normal border-primary/30 text-primary bg-primary/5">
+              Current Month
+            </Badge>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <Label htmlFor="month-select" className="text-xs text-muted-foreground whitespace-nowrap">
+            Filter Period:
+          </Label>
+          <Select value={selectedMonth} onValueChange={(val) => setSelectedMonth(val)}>
+            <SelectTrigger id="month-select" className="w-[190px] h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {availableMonths.map((m) => (
+                <SelectItem key={m} value={m}>
+                  {formatMonthDisplay(m)} {m === getCurrentCalendarMonth() ? '(Current)' : ''}
+                </SelectItem>
+              ))}
+              <SelectItem value="all">All Time (All Records)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       {/* Summary cards */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-3">
+      <div className="mt-4 grid gap-4 sm:grid-cols-3">
         <Card>
           <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Total Monthly</p>
+            <p className="text-sm text-muted-foreground">
+              Total Monthly {selectedMonth === 'all' ? '(All Time)' : `(${formatMonthDisplay(selectedMonth)})`}
+            </p>
             <p className="mt-1 text-2xl font-bold">{formatCurrency(total)}</p>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">
+              {monthlyRecords.length} record{monthlyRecords.length === 1 ? '' : 's'} in selected period
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -294,6 +471,9 @@ export default function ExpensesPage() {
             <p className="mt-1 text-2xl font-bold text-chart-1">
               {formatCurrency(totalEssential)}
             </p>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">
+              {total > 0 ? `${Math.round((totalEssential / total) * 100)}% of monthly total` : '₹0 recorded'}
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -301,6 +481,9 @@ export default function ExpensesPage() {
             <p className="text-sm text-muted-foreground">Discretionary</p>
             <p className="mt-1 text-2xl font-bold text-chart-3">
               {formatCurrency(totalDiscretionary)}
+            </p>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">
+              {total > 0 ? `${Math.round((totalDiscretionary / total) * 100)}% of monthly total` : '₹0 recorded'}
             </p>
           </CardContent>
         </Card>
@@ -337,6 +520,164 @@ export default function ExpensesPage() {
           )}
 
           <form onSubmit={handleSubmit}>
+            {/* Description & Smart Category Suggestion */}
+            <div className="space-y-2 mb-4">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="description" className="text-sm font-medium">
+                  Description
+                </Label>
+                <span className="text-[11px] text-muted-foreground">
+                  Enter merchant or memo to get AI category suggestions
+                </span>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Input
+                  id="description"
+                  placeholder="e.g., Swiggy dinner order, Uber ride, House rent"
+                  value={formData.description}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleSuggestCategory}
+                  disabled={classifying || saving}
+                  className="shrink-0 gap-1.5 border-primary/30 hover:bg-primary/5 hover:text-primary"
+                >
+                  {classifying ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                      <span>Suggesting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4 text-primary" />
+                      <span>Suggest Category</span>
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {/* Smart Suggestion Notice / Review Banner */}
+            {suggestionNotice && (
+              <div
+                className={`mb-4 rounded-lg border p-3.5 text-sm transition-all ${
+                  suggestionNotice.type === 'income'
+                    ? 'border-blue-500/30 bg-blue-500/5 text-blue-900 dark:text-blue-100'
+                    : suggestionNotice.type === 'review'
+                    ? 'border-amber-500/30 bg-amber-500/5 text-amber-900 dark:text-amber-100'
+                    : suggestionNotice.type === 'unavailable'
+                    ? 'border-muted-foreground/20 bg-muted/30 text-muted-foreground'
+                    : suggestionNotice.type === 'info'
+                    ? 'border-primary/20 bg-primary/5 text-foreground'
+                    : 'border-emerald-500/30 bg-emerald-500/5 text-emerald-900 dark:text-emerald-100'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-2.5">
+                    {suggestionNotice.type === 'income' ? (
+                      <Info className="h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400 mt-0.5" />
+                    ) : suggestionNotice.type === 'review' ? (
+                      <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+                    ) : suggestionNotice.type === 'unavailable' ? (
+                      <AlertCircle className="h-4 w-4 shrink-0 text-muted-foreground mt-0.5" />
+                    ) : suggestionNotice.type === 'info' ? (
+                      <Info className="h-4 w-4 shrink-0 text-primary mt-0.5" />
+                    ) : (
+                      <Sparkles className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+                    )}
+
+                    <div className="space-y-1">
+                      {suggestionNotice.type === 'income' ? (
+                        <>
+                          <p className="font-semibold text-blue-700 dark:text-blue-300">
+                            Income Transaction Detected
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {suggestionNotice.userGuidance}
+                          </p>
+                          <div className="mt-2 flex items-center gap-2">
+                            <Button variant="outline" size="sm" asChild className="h-7 text-xs border-blue-500/30">
+                              <Link href="/income" className="gap-1">
+                                Go to Income Module
+                                <ArrowRight className="h-3 w-3" />
+                              </Link>
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 text-xs"
+                              onClick={() => setSuggestionNotice(null)}
+                            >
+                              Continue as Expense
+                            </Button>
+                          </div>
+                        </>
+                      ) : suggestionNotice.type === 'unavailable' ? (
+                        <p className="font-medium text-xs">
+                          {suggestionNotice.userGuidance}
+                        </p>
+                      ) : suggestionNotice.type === 'info' ? (
+                        <p className="font-medium text-xs">
+                          {suggestionNotice.userGuidance}
+                        </p>
+                      ) : (
+                        <>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-semibold text-xs">
+                              {suggestionNotice.type === 'review' ? 'Suggested with Review:' : 'Suggested Category:'}
+                            </span>
+                            <Badge variant="outline" className="font-medium text-xs bg-background/80">
+                              {suggestionNotice.category}
+                            </Badge>
+                            {suggestionNotice.expenseType && (
+                              <Badge variant="secondary" className="text-[11px] capitalize">
+                                {suggestionNotice.expenseType}
+                              </Badge>
+                            )}
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] uppercase tracking-wider text-muted-foreground border-border/60"
+                            >
+                              {suggestionNotice.method === 'rule' ? 'Keyword Rule' : 'ML Model'}
+                            </Badge>
+                            {suggestionNotice.method === 'ml' &&
+                              typeof suggestionNotice.confidence === 'number' && (
+                                <span className="text-[11px] text-muted-foreground">
+                                  ({Math.round(suggestionNotice.confidence * 100)}% confidence)
+                                </span>
+                              )}
+                          </div>
+                          {suggestionNotice.userGuidance && (
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {suggestionNotice.userGuidance}
+                            </p>
+                          )}
+                          <p className="text-[11px] text-muted-foreground/80 mt-1">
+                            Category and type populated below. You can accept or override them before saving.
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 shrink-0 text-muted-foreground hover:text-foreground"
+                    onClick={() => setSuggestionNotice(null)}
+                    title="Dismiss notice"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="space-y-2">
                 <Label htmlFor="category">Category</Label>
@@ -399,16 +740,6 @@ export default function ExpensesPage() {
               </div>
             </div>
 
-            <div className="mt-4 space-y-2">
-              <Label htmlFor="description">Description (optional)</Label>
-              <Input
-                id="description"
-                placeholder="e.g., Monthly rent"
-                value={formData.description}
-                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-              />
-            </div>
-
             <div className="mt-4 flex items-center gap-3">
               <Button type="submit" disabled={saving || loading}>
                 {saving ? (
@@ -440,12 +771,19 @@ export default function ExpensesPage() {
       {/* Chart */}
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle className="text-base">Expense Breakdown by Category</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base">
+              Expense Breakdown by Category {selectedMonth !== 'all' ? `(${formatMonthDisplay(selectedMonth)})` : '(All Time)'}
+            </CardTitle>
+            <span className="text-xs text-muted-foreground">
+              {monthlyRecords.length} transaction{monthlyRecords.length === 1 ? '' : 's'}
+            </span>
+          </div>
         </CardHeader>
         <CardContent>
-          {records.length === 0 ? (
+          {monthlyRecords.length === 0 ? (
             <div className="flex h-48 items-center justify-center text-sm text-muted-foreground">
-              No expenses recorded to display breakdown.
+              No expenses recorded for {selectedMonth === 'all' ? 'any month' : formatMonthDisplay(selectedMonth)}.
             </div>
           ) : (
             <ExpenseChart data={chartData} type="bar" />

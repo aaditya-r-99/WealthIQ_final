@@ -11,7 +11,7 @@ interface DisclaimerBannerProps {
 }
 
 const defaultText =
-  'WealthIQ is an educational AI project for a college course. It is not professional financial advice. All calculations, predictions, and recommendations are for learning purposes only.';
+  'WealthIQ is an educational AI project for a college course. It is not professional financial advice. All calculations, forecasts, and classifications are for learning purposes only.';
 
 export function DisclaimerBanner({
   text = defaultText,

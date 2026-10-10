@@ -236,7 +236,7 @@ export default function ProfilePage() {
           <CardHeader>
             <CardTitle className="text-xl">Financial Profile</CardTitle>
             <CardDescription>
-              Your personal information helps WealthIQ analyze your financial health and calibrate recommendations.
+              Your personal information helps WealthIQ analyze your financial health and calibrate your financial metrics.
             </CardDescription>
           </CardHeader>
           <CardContent>

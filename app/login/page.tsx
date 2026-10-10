@@ -55,11 +55,11 @@ export default function LoginPage() {
         </div>
         <div className="relative space-y-4">
           <h2 className="text-3xl font-bold leading-tight">
-            Understand your financial health with AI
+            Understand your financial health with clarity
           </h2>
           <p className="text-sidebar-muted">
-            Get a comprehensive Financial Health Score, spending risk
-            classification, forecasts, and personalized recommendations.
+            Get a transparent Financial Health Score, spending risk
+            analysis, multi-year forecasts, and smart transaction categorization.
           </p>
         </div>
         <div className="relative text-xs text-sidebar-muted">

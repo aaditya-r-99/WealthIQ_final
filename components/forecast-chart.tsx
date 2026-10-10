@@ -13,7 +13,9 @@ import {
   ComposedChart,
 } from 'recharts';
 import type { ForecastPoint } from '@/lib/types';
-import { formatCurrency } from '@/lib/format';
+import { formatCurrency, formatCompactINR } from '@/lib/format';
+import { TrendingUp } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ForecastChartProps {
   data: ForecastPoint[];
@@ -21,14 +23,34 @@ interface ForecastChartProps {
 }
 
 export function ForecastChart({ data, className }: ForecastChartProps) {
+  if (!data || data.length === 0) {
+    return (
+      <div
+        className={cn(
+          'flex h-[300px] flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/20 p-6 text-center',
+          className
+        )}
+      >
+        <TrendingUp className="h-8 w-8 text-muted-foreground/50 mb-2" />
+        <p className="text-sm font-medium text-muted-foreground">Insufficient financial history for forecast</p>
+        <p className="text-xs text-muted-foreground/70 mt-1 max-w-sm">
+          Add your monthly income, expense, and asset records to generate your 36-month net worth trajectory.
+        </p>
+      </div>
+    );
+  }
+
   const lastHistoricalMonth = [...data]
     .reverse()
     .find((d) => !d.isForecast)?.month;
 
   return (
-    <div className={className}>
-      <ResponsiveContainer width="100%" height={300}>
-        <ComposedChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+    <div className={cn('w-full', className)}>
+      <ResponsiveContainer width="100%" height={310}>
+        <ComposedChart
+          data={data}
+          margin={{ top: 12, right: 16, left: 16, bottom: 4 }}
+        >
           <defs>
             <linearGradient id="netWorthGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.2} />
@@ -43,16 +65,19 @@ export function ForecastChart({ data, className }: ForecastChartProps) {
           <XAxis
             dataKey="month"
             stroke="hsl(var(--muted-foreground))"
-            fontSize={12}
+            fontSize={11}
             tickLine={false}
             axisLine={false}
+            tickMargin={6}
           />
           <YAxis
             stroke="hsl(var(--muted-foreground))"
-            fontSize={12}
+            fontSize={11}
+            width={65}
             tickLine={false}
             axisLine={false}
-            tickFormatter={(value) => formatCurrency(value).replace(/\s/g, '')}
+            tickMargin={8}
+            tickFormatter={formatCompactINR}
           />
           <Tooltip
             contentStyle={{
@@ -60,6 +85,8 @@ export function ForecastChart({ data, className }: ForecastChartProps) {
               border: '1px solid hsl(var(--border))',
               borderRadius: '8px',
               fontSize: '13px',
+              color: 'hsl(var(--card-foreground))',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
             }}
             formatter={(value: number) => formatCurrency(value)}
           />
@@ -68,11 +95,20 @@ export function ForecastChart({ data, className }: ForecastChartProps) {
               x={lastHistoricalMonth}
               stroke="hsl(var(--muted-foreground))"
               strokeDasharray="4 4"
-              label={{
-                value: 'Forecast →',
-                position: 'top',
-                fill: 'hsl(var(--muted-foreground))',
-                fontSize: 11,
+              label={({ viewBox }: any) => {
+                if (!viewBox) return <g />;
+                return (
+                  <text
+                    x={(viewBox.x ?? 0) + 8}
+                    y={(viewBox.y ?? 0) + 12}
+                    fill="hsl(var(--muted-foreground))"
+                    fontSize={11}
+                    textAnchor="start"
+                    className="font-medium"
+                  >
+                    Forecast →
+                  </text>
+                );
               }}
             />
           )}

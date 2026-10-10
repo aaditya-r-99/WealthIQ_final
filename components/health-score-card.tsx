@@ -67,11 +67,28 @@ export function HealthScoreCard({ score, category, className }: HealthScoreCardP
           >
             {category}
           </span>
-          <p className="text-xs text-muted-foreground text-center max-w-xs">
-            Transparent 0–100 score based on five weighted financial pillars and predefined benchmarks.
+          <p className="text-xs text-muted-foreground text-center max-w-xs leading-relaxed">
+            {getCategoryInterpretation(category)}
           </p>
         </div>
       </CardContent>
     </Card>
   );
+}
+
+function getCategoryInterpretation(category: HealthCategory): string {
+  switch (category) {
+    case 'Excellent':
+      return 'Exceptional resilience across savings, debt obligations, and accumulated assets.';
+    case 'Healthy':
+      return 'Solid financial foundation with sustainable living expenses and healthy cash surplus.';
+    case 'Moderate':
+      return 'Balanced foundation; prioritize building emergency runway and lowering obligations.';
+    case 'Weak':
+      return 'High expense or debt burden; targeted budgeting adjustments recommended.';
+    case 'Critical':
+      return 'Elevated debt obligations and cash deficit requiring immediate attention.';
+    default:
+      return 'Comprehensive evaluation across savings, expenses, debt, emergency fund, and assets.';
+  }
 }

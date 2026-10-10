@@ -1,0 +1,26 @@
+{
+  "Baseline LogisticRegression (C=1.0)": {
+    "accuracy": 0.979565772669221,
+    "macro_precision": 0.9808871062972669,
+    "macro_recall": 0.9745058062741837,
+    "macro_f1": 0.977549331700038
+  },
+  "Tuned LogisticRegression (Sublinear TF-IDF, C=3.0, Balanced)": {
+    "accuracy": 0.9838229033631333,
+    "macro_precision": 0.9805936852474819,
+    "macro_recall": 0.9797804580486253,
+    "macro_f1": 0.9800897741526142
+  },
+  "Calibrated LinearSVC (Linear SVM + Sigmoid Platt Scaling)": {
+    "accuracy": 0.9855257556406982,
+    "macro_precision": 0.9833372646186322,
+    "macro_recall": 0.9820262612977732,
+    "macro_f1": 0.9825976027457357
+  },
+  "Complement Naive Bayes (Class-Imbalance Aware)": {
+    "accuracy": 0.9829714772243507,
+    "macro_precision": 0.9797497540969974,
+    "macro_recall": 0.9789821093244971,
+    "macro_f1": 0.9793052839642891
+  }
+}

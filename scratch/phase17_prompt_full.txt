@@ -1,0 +1,355 @@
+<USER_REQUEST>
+# WealthIQ — Phase 17: Train, Integrate & Launch the Indian Household Spending Benchmark ML Model
+
+## Objective
+
+Build a genuine machine-learning feature for WealthIQ using India's Household Consumption Expenditure Survey (HCES) 2023–24 data.
+
+The feature must have:
+
+1. A properly trained and evaluated household expenditure regression model.
+2. A working inference API.
+3. A dedicated, polished Household Benchmark page in WealthIQ.
+4. A clear comparison between a user's comparable household expenditure and the estimated HCES benchmark.
+5. Integration with the existing application navigation and, where useful, the dashboard.
+6. Automated tests, browser verification and a complete implementation report.
+
+**This is an implementation phase, not an audit-only phase.** First reuse any valid existing training work or model artifacts. If the benchmark model has not yet been trained, complete the training and evaluation using the downloaded HCES data. Do not stop after listing files or writing recommendations.
+
+Do not fabricate training results, model artifacts or prediction outputs. If a genuine data-access or methodological blocker makes a particular step impossible, document the precise blocker and complete every independent part that remains possible.
+
+## 1. Preserve the Existing WealthIQ Project
+
+Before editing:
+
+- Inspect `git status`, relevant diffs and untracked files.
+- Read the Phase 14A, Phase 14B, Phase 15 and Phase 16 reports.
+- Reconcile the current classifier debugging task and preserve its work.
+- Inspect the existing HCES dataset files and survey documentation available on the system.
+- Inspect any previous training scripts, model artifacts and evaluation reports before duplicating work.
+
+Preserve all existing modifications and untracked files.
+
+Do not use destructive Git commands, reset the branch, clean the working tree, commit, push or deploy to production.
+
+Do not modify Supabase schemas, authentication policies, RLS, or existing financial CRUD without a demonstrated requirement.
+
+Keep the existing black-and-white theme, responsive layout and collapsible sidebar.
+
+Keep the current Smart Expense Categorization model and its integration intact. Do not restore the retired legacy recommendations, ML Financial Archetype or India Financial Research Lab.
+
+## 2. Inspect and Prepare the HCES Dataset
+
+Locate the previously downloaded HCES 2023–24 dataset and related documentation. Search the known Downloads directories and existing project data locations before downloading anything again.
+
+Read the survey documentation, codebooks, record layouts and relevant files.
+
+Identify the correct household-level data sources, including:
+
+- Household characteristics.
+- Household consumption expenditure.
+- Household identifiers required to join records safely.
+- Urban/rural sector and state or region information.
+- Household size and other suitable characteristics supported by the actual data.
+- Survey weights, strata, sampling clusters and relevant expenditure-reference-period definitions.
+
+Do not assume variable names, file structures or identifiers without checking the source documentation.
+
+Keep raw microdata outside the public website directories and outside Git. Do not expose individual survey records or training data to browser clients.
+
+### Correct prediction target
+
+The primary target should be **monthly per-capita consumption expenditure (MPCE)** or a methodologically equivalent household-consumption measure that can be verified against the survey documentation.
+
+Determine the correct official calculation and reference period before creating the target. Prefer the survey's documented Modified Mixed Reference Period (MMRP) measure when appropriate and supported by the source records.
+
+Do not mix incompatible expenditure definitions or calculate MPCE using an unverified formula.
+
+The intended target is household consumption expenditure, not bank-account balances, future personal expenses, net worth or financial wellness.
+
+### Household joins and data integrity
+
+- Verify record uniqueness and join cardinality.
+- Detect duplicate household records and invalid identifiers.
+- Investigate missing or non-finite values.
+- Handle survey weights correctly.
+- Validate expenditure totals and units.
+- Identify and document data exclusions.
+- Avoid joining repeated item-level expenditure rows in a way that duplicates household totals.
+- Keep a reproducible preprocessing pipeline.
+
+## 3. Train the Genuine ML Regression Model
+
+If a valid existing HCES benchmark model already exists, inspect its provenance and evaluation before deciding whether it should be reused or retrained.
+
+Otherwise, implement a reproducible training pipeline.
+
+### Baselines and candidate models
+
+Build a simple, credible model comparison that includes:
+
+- A baseline regressor, such as the training-set median or mean.
+- A regularized regression baseline.
+- At least one nonlinear regression model suited to structured household data, such as Random Forest, Extra Trees or HistGradientBoostingRegressor.
+
+Use the installed and compatible scikit-learn ecosystem where appropriate. Do not add large dependencies without a clear benefit.
+
+Use a reproducible random seed and a defensible train/validation/test design. Ensure observations from the same household cannot leak across the splits.
+
+Use survey weights in model fitting and evaluation where supported and methodologically appropriate. Account for survey sampling structure when designing evaluation.
+
+### Prevent target leakage
+
+The model must predict the target from household characteristics, not simply receive the answer disguised as an input.
+
+Specifically:
+
+- Do not include the calculated target MPCE as an input feature.
+- Do not include direct components of the same expenditure total as predictors if doing so leaks the target.
+- Do not derive input features using future outcomes or the target's own formula.
+- Do not use random row splitting when it would separate duplicate or related records across training and testing.
+
+Document every retained model feature and explain why it is legitimate at inference time.
+
+### Evaluation
+
+Report appropriate regression metrics, including:
+
+- MAE in Indian rupees per person per month.
+- RMSE in Indian rupees per person per month.
+- R² as a supplementary measure, not the only quality metric.
+- Weighted evaluation results where supported by the survey design.
+- Performance relative to the baseline regressor.
+- Relevant segment-level error analysis, including urban/rural and geographic performance where sample sizes support it.
+
+Do not report classification accuracy for this regression task.
+
+Do not claim the model is good solely because its training performance is high. Use held-out evaluation and compare against the baseline.
+
+If the model performs poorly, improve feature engineering and compare suitable candidates. If some segments have substantial error, document the limitations in both the report and the UI.
+
+Save the fitted preprocessing pipeline and trained estimator as a versioned inference artifact with the required metadata.
+
+Include a reproducible training script, evaluation script and machine-readable model metadata. Keep raw survey data and unnecessary training artifacts out of the deployable package.
+
+## 4. Build a Working Inference API
+
+Expose the trained household benchmark model through a server-side API suitable for the existing WealthIQ architecture.
+
+Inspect the existing classifier microservice and its deployment constraints first.
+
+Use the existing Python service architecture if the new model can be added without unacceptable memory, startup, dependency or deployment-limit problems. Otherwise, create an appropriately isolated inference service. Do not silently overload the classifier service without evaluating the impact.
+
+Define a typed request containing the household characteristics supported by the trained model.
+
+The API must:
+
+- Validate inputs and reject impossible or malformed values.
+- Apply the same preprocessing used during training.
+- Load the correct model artifact.
+- Return actual model inference, never hardcoded sample predictions.
+- Include model version and the prediction units.
+- Handle missing or unavailable services gracefully.
+- Avoid logging personal financial information.
+- Keep internal credentials and secrets server-side.
+- Return explicit errors when a prediction cannot be produced.
+
+Suggested response structure:
+
+- Estimated monthly per-capita consumption expenditure in INR.
+- Estimated household-level equivalent expenditure, derived using household size where appropriate.
+- Model version.
+- Relevant uncertainty or limitations supported by the evaluation.
+- A short description of the reference population and survey period.
+
+Do not imply that an estimate is the exact spending of a particular household.
+
+## 5. Add the Household Benchmark Page to WealthIQ
+
+Create a dedicated page, provisionally:
+
+`/household-benchmark`
+
+Use the existing black-and-white WealthIQ design system, typography, navigation, responsive layout and accessible components.
+
+This must be a functioning product feature, not another research dashboard.
+
+### Input form
+
+Provide a clean, understandable form using only characteristics supported by the trained model and defensible from the survey documentation.
+
+Suitable fields may include:
+
+- State or region.
+- Urban or rural setting.
+- Household size.
+- Household composition.
+- Other non-sensitive household characteristics if supported and demonstrably useful.
+
+Do not require every possible characteristic. Keep the initial form short enough to complete comfortably.
+
+Avoid requesting sensitive characteristics such as caste or religion unless a documented methodological reason makes them essential and the user explicitly consents. Prefer a useful benchmark with fewer, less-sensitive inputs.
+
+Do not invent features that were absent from training.
+
+### Results interface
+
+After the user submits the form, show the actual model output:
+
+**Estimated household spending benchmark**
+
+- Estimated monthly expenditure per person.
+- Estimated monthly household equivalent.
+- State/sector context used.
+- Reference survey: HCES 2023–24.
+- A brief explanation of the benchmark and its limitations.
+- Model evaluation information in a concise, understandable presentation.
+
+Label the values in INR and clearly distinguish a per-person benchmark from a household-total estimate.
+
+If uncertainty estimates have been methodologically evaluated, display them with an explanation. Do not fabricate confidence intervals or claim calibrated uncertainty without evidence.
+
+### Compare with the user's own spending
+
+Where an authenticated user has suitable expense history, offer an optional comparison with their own recorded expenditure.
+
+- Ask permission before using personal expense history for this comparison.
+- Explain which records and date range the comparison uses.
+- Make it clear that the user's application records may represent only the transactions entered into WealthIQ, whereas HCES measures household consumption under a survey definition.
+- Provide a manual household monthly expenditure input if the user cannot or does not want to compare application records.
+- Do not compare incompatible expenditure definitions without a clear limitation note.
+- Never modify financial records during the comparison.
+
+The comparison must be descriptive rather than judgmental. Do not tell a household that it is financially unhealthy solely because spending is above a population benchmark.
+
+### UI requirements
+
+- Provide loading, validation, error and empty states.
+- Ensure the page remains usable on desktop and mobile.
+- Use readable charts or simple comparison bars only when they improve understanding.
+- Avoid unnecessary badges, decorative AI graphics, clutter and invented financial figures.
+- Add navigation to the new benchmark page in the existing Planning & Insights section.
+- Add a concise dashboard link or entry point if it fits naturally, without restoring old AI cards or making the dashboard crowded.
+
+Do not label this feature as next-month expense forecasting. It is a separate, cross-sectional household spending benchmark.
+
+## 6. Integrate Without Breaking Existing Features
+
+Preserve:
+
+- Supabase authentication and protected routes.
+- All existing financial CRUD workflows.
+- Smart Expense Categorization and its manual fallback.
+- The existing 36-month deterministic net-worth projection.
+- The deterministic next-month expense estimate.
+- Market Insights and all other retained features.
+- The current classifier API contract and security checks.
+
+Do not combine the household benchmark model with the transaction classifier's target or training pipeline.
+
+Do not bring back the removed Global Findex emergency-resilience model, legacy archetype classifier or recommendation system.
+
+Keep the benchmark inference interface typed, testable and separate from page presentation logic.
+
+## 7. Test and Validate the Entire Feature
+
+### Model tests
+
+Verify:
+
+- Dataset preprocessing and household joins.
+- Reproducible model training.
+- No target leakage.
+- Model artifact load and inference.
+- Output units and numeric validity.
+- Held-out evaluation results.
+- API validation and malformed input behavior.
+- Missing-field handling.
+- Graceful behavior when the model service is unavailable.
+
+### Website tests
+
+Using the actual local browser:
+
+1. Open the Household Benchmark page.
+2. Complete its form with valid supported inputs.
+3. Submit it and verify the results are produced by the trained model.
+4. Verify the household-size calculation.
+5. Test invalid input and unavailable-service handling.
+6. Verify the optional spending comparison and its date range/consent behavior where implemented.
+7. Check desktop and mobile rendering.
+8. Confirm the sidebar, monochrome theme and other retained routes still work.
+9. Ensure the retired Research Lab and legacy Recommendations pages remain absent.
+
+### Automated checks
+
+Run the applicable project checks:
+
+- `npx tsc --noEmit`
+- `npm run lint`
+- New model preprocessing and inference tests.
+- New API integration tests.
+- Existing classifier regression tests.
+- Existing forecasting regression tests.
+- `npm run build`, taking care not to disrupt the active development server.
+
+Do not weaken existing tests to obtain a passing result.
+
+## 8. Preview Deployment Integration
+
+The Phase 16 preview deployments already exist.
+
+Do not deploy to production or change any existing domain.
+
+After local training, API integration and browser tests pass:
+
+- Determine the required preview configuration for the new inference endpoint.
+- Keep secrets in the correct server-side Preview environment.
+- Ensure the preview API points to the correct hosted model service rather than localhost.
+- Confirm the model artifact and inference dependencies fit the actual deployment limits.
+- Update the existing preview safely only if the necessary authenticated deployment access is available and the changes are limited to Preview.
+- If preview deployment cannot be performed safely, finish the implementation and provide precise remaining configuration steps. Do not claim the hosted feature is available before it is verified.
+
+## 9. Required Completion Report
+
+Create `phase17_household_benchmark_ml_report.md`, including:
+
+1. Dataset provenance and documentation inspected.
+2. Household join and target-construction methodology.
+3. Training pipeline and model candidates.
+4. Selected model, model artifact location and version.
+5. Held-out weighted/unweighted evaluation metrics, as applicable.
+6. Baseline comparisons and known performance limitations.
+7. Model input features and reasons for selecting them.
+8. Inference API design and response example with a clearly labelled test example.
+9. UI routes and components created.
+10. Example input and actual model-generated output from a real inference test.
+11. Optional spending-comparison methodology and limitations.
+12. Automated test results.
+13. Browser screenshots and verification findings.
+14. Preview deployment status and any missing environment configuration.
+15. Confirmation that existing classifier, forecasts, financial CRUD, authentication and prior UI cleanup were preserved.
+16. Outstanding defects and precise next steps.
+
+Never fabricate performance metrics or sample results. Keep private survey data and secrets out of the report.
+
+## Completion Gate
+
+Phase 17 is complete only when:
+
+- A real HCES-based trained model exists and its training and evaluation are reproducible.
+- The fitted model can be loaded for inference.
+- A working server-side API returns real predictions from the trained model.
+- The Household Benchmark page is available in the WealthIQ application.
+- A user can enter supported household characteristics and receive a real benchmark.
+- The output is correctly labelled and does not pretend to predict the user's future personal expenditure.
+- The main application and existing features still pass regression checks.
+- The report documents actual results and remaining limitations.
+
+Do not stop after performing an audit, creating a mock interface or writing a plan. Implement the feature end to end.
+
+Stop after the completion report. Do not commit, push, deploy to production, reset the branch or discard any existing work.
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-10-10T12:07:36+05:30.
+</ADDITIONAL_METADATA>

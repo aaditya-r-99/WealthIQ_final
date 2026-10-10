@@ -64,16 +64,15 @@ export function WealthIQIcon({
     >
       <defs>
         <linearGradient id="wiq-gradient-bg" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#0284c7" />
-          <stop offset="50%" stopColor="#2563eb" />
-          <stop offset="100%" stopColor="#4f46e5" />
+          <stop offset="0%" stopColor="#1E293B" />
+          <stop offset="100%" stopColor="#0F172A" />
         </linearGradient>
         <linearGradient id="wiq-gradient-stroke" x1="8" y1="12" x2="32" y2="30" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="100%" stopColor="#dbeafe" />
+          <stop offset="100%" stopColor="#f8fafc" />
         </linearGradient>
         <filter id="wiq-subtle-shadow" x="-10%" y="-10%" width="120%" height="120%">
-          <feDropShadow dx="0" dy="2" stdDeviation="2" floodOpacity="0.18" floodColor="#1e3a8a" />
+          <feDropShadow dx="0" dy="2" stdDeviation="2" floodOpacity="0.22" floodColor="#000000" />
         </filter>
       </defs>
 
@@ -93,7 +92,7 @@ export function WealthIQIcon({
         height="38.5"
         rx="9.25"
         stroke="#ffffff"
-        strokeOpacity="0.22"
+        strokeOpacity="0.18"
         strokeWidth="1.5"
       />
 
@@ -153,13 +152,25 @@ export function WealthIQLogo({
     }
   };
 
+  const getThemeHighlightClass = () => {
+    switch (theme) {
+      case 'sidebar':
+      case 'dark':
+        return 'text-white';
+      case 'light':
+        return 'text-slate-900 font-black';
+      default:
+        return 'text-foreground font-black';
+    }
+  };
+
   const content = (
     <div className={cn('inline-flex items-center', config.gap, className)}>
       <WealthIQIcon size={config.iconSize} animate={animate} />
       {variant !== 'icon' && (
         <div className="flex flex-col justify-center leading-none">
           <span className={cn('tracking-tight font-bold', config.titleClass, getThemeTextClass())}>
-            Wealth<span className="text-primary">IQ</span>
+            Wealth<span className={getThemeHighlightClass()}>IQ</span>
           </span>
           {variant === 'full' && (
             <span
@@ -169,7 +180,7 @@ export function WealthIQLogo({
                 getThemeSubClass()
               )}
             >
-              Financial Health AI
+              Personal Finance
             </span>
           )}
         </div>

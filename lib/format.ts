@@ -18,6 +18,42 @@ export function formatCurrency(value: number, currency = 'INR'): string {
   }).format(safeValue);
 }
 
+/**
+ * Format large INR currency values into compact readable representations
+ * suitable for chart axes and restrained displays (e.g., ₹0, ₹50k, ₹1.5L, ₹10L, ₹1Cr).
+ */
+export function formatCompactINR(value: number): string {
+  const safeValue = isNaN(value) || value === null || value === undefined ? 0 : value;
+  if (safeValue === 0) return '₹0';
+
+  const isNegative = safeValue < 0;
+  const abs = Math.abs(safeValue);
+  const prefix = isNegative ? '-₹' : '₹';
+
+  // Crores: >= 10,000,000 (1 Cr)
+  if (abs >= 10000000) {
+    const cr = abs / 10000000;
+    const formatted = cr >= 10 ? Math.round(cr) : Number(cr.toFixed(1));
+    return `${prefix}${formatted}Cr`;
+  }
+
+  // Lakhs: >= 100,000 (1 L)
+  if (abs >= 100000) {
+    const l = abs / 100000;
+    const formatted = l >= 10 ? Math.round(l) : Number(l.toFixed(1));
+    return `${prefix}${formatted}L`;
+  }
+
+  // Thousands: >= 1,000 (1 k)
+  if (abs >= 1000) {
+    const k = abs / 1000;
+    const formatted = k >= 10 ? Math.round(k) : Number(k.toFixed(1));
+    return `${prefix}${formatted}k`;
+  }
+
+  return `${prefix}${Math.round(abs)}`;
+}
+
 export function formatNumber(value: number, decimals = 0): string {
   const safeValue = isNaN(value) || value === null || value === undefined ? 0 : value;
   return new Intl.NumberFormat('en-IN', {

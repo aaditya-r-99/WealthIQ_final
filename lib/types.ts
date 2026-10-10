@@ -144,30 +144,6 @@ export interface ScoreBreakdown {
   health_category: HealthCategory;
 }
 
-// --- Recommendations (Phase 10, mocked in Phase 1) ---
-
-export type RecommendationCategory =
-  | 'Savings'
-  | 'Expenses'
-  | 'Emergency Fund'
-  | 'Debt'
-  | 'Investment Diversification'
-  | 'FD'
-  | 'Financial Planning';
-
-export type Priority = 'High' | 'Medium' | 'Low';
-
-export interface Recommendation {
-  id: string;
-  user_id: string;
-  category: RecommendationCategory;
-  priority: Priority;
-  severity: number;
-  title: string;
-  reason: string;
-  suggested_action: string;
-  created_at: string;
-}
 
 // --- Financial history (Phase 8 forecast, mocked in Phase 1) ---
 
@@ -223,6 +199,10 @@ export interface FDRate {
   minimum_amount: number;
   premature_withdrawal_notes: string;
   last_updated: string;
+  source_url?: string;
+  effective_date?: string;
+  deposit_limit?: string;
+  compounding_notes?: string;
 }
 
 export interface FDComparisonResult {

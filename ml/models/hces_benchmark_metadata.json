@@ -1,0 +1,100 @@
+{
+  "model_name": "hces_spending_benchmark_v1",
+  "algorithm": "HistGradientBoostingRegressor",
+  "target": "mpce (Monthly Per Capita Consumption Expenditure in INR)",
+  "survey": "MoSPI Household Consumption Expenditure Survey (HCES) 2023-24",
+  "survey_period": "August 2023 \u2013 July 2024",
+  "total_households_trained": 209603,
+  "total_households_tested": 52350,
+  "total_sample_size": 261953,
+  "random_seed": 42,
+  "feature_columns": [
+    "state",
+    "sector",
+    "highest_education",
+    "livelihood",
+    "dwelling_type",
+    "cooking_fuel",
+    "land_owned",
+    "hh_size",
+    "num_adults",
+    "num_children"
+  ],
+  "categorical_features": [
+    "state",
+    "sector",
+    "highest_education",
+    "livelihood",
+    "dwelling_type",
+    "cooking_fuel",
+    "land_owned"
+  ],
+  "numeric_features": [
+    "hh_size",
+    "num_adults",
+    "num_children"
+  ],
+  "model_evaluation": {
+    "baseline_weighted_mean": {
+      "weighted": {
+        "mae": 5593.171813466434,
+        "rmse": 8810.930580537071,
+        "r2": -0.00192643180195895
+      },
+      "unweighted": {
+        "mae": 5415.479057677334,
+        "rmse": 8650.006734971696,
+        "r2": -0.002885287818054083
+      }
+    },
+    "baseline_median": {
+      "weighted": {
+        "mae": 5270.222869382868,
+        "rmse": 9081.62135072566,
+        "r2": -0.0644347780214427
+      },
+      "unweighted": {
+        "mae": 5163.9646240096445,
+        "rmse": 8941.635304711224,
+        "r2": -0.07164828788286837
+      }
+    },
+    "ridge_regression": {
+      "weighted": {
+        "mae": 4019.8370553691566,
+        "rmse": 6630.9251010932385,
+        "r2": 0.43253311941196304
+      },
+      "unweighted": {
+        "mae": 4053.0043068883697,
+        "rmse": 6697.266077517885,
+        "r2": 0.39880760793115066
+      }
+    },
+    "hist_gradient_boosting": {
+      "weighted": {
+        "mae": 3461.217893033392,
+        "rmse": 5834.941697035416,
+        "r2": 0.5605946740489864
+      },
+      "unweighted": {
+        "mae": 3453.3312889773797,
+        "rmse": 5780.563541907541,
+        "r2": 0.5521230335204825
+      }
+    }
+  },
+  "segment_evaluation": {
+    "Rural": {
+      "mae": 2354.6720638006805,
+      "rmse": 3742.4109167978318,
+      "r2": 0.4358630055643785
+    },
+    "Urban": {
+      "mae": 5532.14523492266,
+      "rmse": 8458.935178908388,
+      "r2": 0.47510297780982724
+    }
+  },
+  "artifact_size_mb": 0.23
+}

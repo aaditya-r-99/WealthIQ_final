@@ -8,34 +8,29 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const jetbrains = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jetbrains' });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://wealthiq-nine.vercel.app'),
   title: 'WealthIQ — Understand Your Financial Health',
   description:
-    'WealthIQ analyzes your income, expenses, savings, debt, and investments to produce a Financial Health Score, spending risk classification, forecasts, and personalized recommendations.',
+    'WealthIQ provides intelligent personal financial intelligence with smart Indian transaction classification, transparent health scoring, and multi-year forecasting.',
   openGraph: {
-    title: 'WealthIQ — Understand Your Financial Health',
+    title: 'WealthIQ — Intelligent Personal Financial Platform',
     description:
-      'AI-powered personal financial health analysis with ML classification, forecasting, and personalized recommendations.',
+      'Intelligent financial intelligence with smart transaction classification, deterministic health scoring, and long-term net worth forecasting.',
     images: [
       {
-        url: 'https://bolt.new/static/og_default.png',
+        url: '/icon.svg',
+        width: 1200,
+        height: 630,
+        alt: 'WealthIQ Financial Platform',
       },
     ],
   },
   twitter: {
-    card: 'summary_large_image',
-    images: [
-      {
-        url: 'https://bolt.new/static/og_default.png',
-      },
-    ],
-  },
-  icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/icon.svg', type: 'image/svg+xml' },
-    ],
-    shortcut: '/favicon.ico',
-    apple: '/icon.svg',
+    card: 'summary',
+    title: 'WealthIQ — Understand Your Financial Health',
+    description:
+      'Intelligent financial intelligence with smart transaction classification, deterministic health scoring, and long-term net worth forecasting.',
+    images: ['/icon.svg'],
   },
 };
 
@@ -46,7 +41,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${jetbrains.variable}`}>
-      <body className="font-sans antialiased">
+      <body className="font-sans antialiased bg-background text-foreground min-h-screen">
         <AuthProvider>
           <NotificationProvider>{children}</NotificationProvider>
         </AuthProvider>

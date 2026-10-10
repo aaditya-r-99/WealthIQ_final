@@ -4,80 +4,44 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --popover: 0 0% 100%;
+    --background: 210 20% 98%;          /* #F8FAFC - crisp light neutral background */
+    --foreground: 222 47% 11%;          /* #0F172A - near-black / deep charcoal */
+    --card: 0 0% 100%;                  /* #FFFFFF - pure white surfaces */
+    --card-foreground: 222 47% 11%;     /* #0F172A */
+    --popover: 0 0% 100%;               /* #FFFFFF */
     --popover-foreground: 222 47% 11%;
-    --primary: 199 89% 48%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96%;
+    --primary: 222 47% 11%;             /* #0F172A - authoritative black/charcoal primary */
+    --primary-foreground: 210 40% 98%;  /* #FFFFFF */
+    --secondary: 210 40% 96%;           /* #F1F5F9 - light neutral */
     --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 199 89% 48%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 72% 51%;
+    --muted: 210 40% 96%;               /* #F1F5F9 */
+    --muted-foreground: 215 16% 47%;    /* #64748B - readable medium slate gray */
+    --accent: 210 40% 96%;              /* #F1F5F9 */
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 72% 51%;          /* #EF4444 - red for deficits / errors */
     --destructive-foreground: 0 0% 100%;
-    --success: 142 71% 45%;
+    --success: 142 71% 45%;            /* #10B981 - emerald for surplus / growth */
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
+    --warning: 38 92% 50%;             /* #F59E0B - amber for alerts */
     --warning-foreground: 0 0% 100%;
     --danger: 0 72% 51%;
     --danger-foreground: 0 0% 100%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 199 89% 48%;
-    --chart-1: 199 89% 48%;
-    --chart-2: 142 71% 45%;
-    --chart-3: 38 92% 50%;
-    --chart-4: 0 72% 51%;
-    --chart-5: 280 65% 60%;
-    --radius: 0.625rem;
-    --sidebar: 222 47% 11%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-muted: 215 28% 65%;
-    --sidebar-border: 215 28% 24%;
-    --sidebar-accent: 199 89% 48%;
-  }
+    --border: 214 32% 91%;             /* #E2E8F0 - light neutral gray border */
+    --input: 214 32% 91%;              /* #E2E8F0 */
+    --ring: 222 47% 11%;               /* #0F172A */
+    --chart-1: 222 47% 11%;            /* #0F172A - Net Worth (black/charcoal) */
+    --chart-2: 142 71% 45%;            /* #10B981 - Savings (emerald) */
+    --chart-3: 215 16% 47%;            /* #64748B - Discretionary (slate) */
+    --chart-4: 0 72% 51%;              /* #EF4444 - Debt / Deficit */
+    --chart-5: 220 13% 69%;
+    --radius: 0.75rem;                 /* 12px default */
 
-  .dark {
-    --background: 222 47% 7%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 11%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 199 89% 48%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 215 28% 17%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 215 28% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 199 89% 48%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
-    --success: 142 71% 45%;
-    --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-    --danger: 0 72% 51%;
-    --danger-foreground: 0 0% 100%;
-    --border: 215 28% 20%;
-    --input: 215 28% 20%;
-    --ring: 199 89% 48%;
-    --chart-1: 199 89% 48%;
-    --chart-2: 142 71% 45%;
-    --chart-3: 38 92% 50%;
-    --chart-4: 0 72% 51%;
-    --chart-5: 280 65% 60%;
-    --sidebar: 222 47% 9%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-muted: 215 20% 65%;
-    --sidebar-border: 215 28% 16%;
-    --sidebar-accent: 199 89% 48%;
+    /* Sidebar: Deep charcoal / black */
+    --sidebar: 228 28% 6%;             /* #0B0D14 */
+    --sidebar-foreground: 210 40% 98%; /* #F8FAFC */
+    --sidebar-muted: 215 20% 65%;      /* #94A3B8 */
+    --sidebar-border: 228 20% 12%;     /* #171A27 */
+    --sidebar-accent: 0 0% 100%;       /* #FFFFFF */
   }
 }
 
@@ -88,6 +52,8 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: 'rlig' 1, 'calt' 1;
+    background-color: #F8FAFC;
+    color: #0F172A;
   }
 }
 
@@ -140,6 +106,7 @@
   .bg-primary\/5 { background-color: hsl(var(--primary) / 0.05); }
   .bg-primary\/10 { background-color: hsl(var(--primary) / 0.1); }
   .bg-primary\/15 { background-color: hsl(var(--primary) / 0.15); }
+  .bg-primary\/20 { background-color: hsl(var(--primary) / 0.2); }
   .bg-success\/5 { background-color: hsl(var(--success) / 0.05); }
   .bg-success\/10 { background-color: hsl(var(--success) / 0.1); }
   .bg-warning\/5 { background-color: hsl(var(--warning) / 0.05); }
@@ -155,9 +122,28 @@
   .text-danger-foreground {
     color: hsl(var(--danger-foreground));
   }
+
+  /* Monochrome Surface & Pill Helpers */
+  .mono-card {
+    background-color: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+  }
+
+  .mono-pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    border: 1px solid #E2E8F0;
+    background: #F1F5F9;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    color: #475569;
+  }
 }
 
-/* Smooth scrollbar for sidebar */
+/* Custom scrollbars */
 .sidebar-scroll::-webkit-scrollbar {
   width: 4px;
 }
@@ -165,6 +151,6 @@
   background: transparent;
 }
 .sidebar-scroll::-webkit-scrollbar-thumb {
-  background: hsl(var(--sidebar-border));
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 4px;
 }

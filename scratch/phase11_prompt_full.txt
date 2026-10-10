@@ -1,0 +1,135 @@
+<USER_REQUEST>
+# WealthIQ — Phase 11: Deterministic Expense Forecasting and Monthly Aggregation Fix
+
+Phase 10 established that deterministic baselines are competitive with candidate ML models on controlled synthetic spending scenarios. Real-world ML forecasting effectiveness remains unproven.
+
+Implement the next stage using deterministic calculations only. Correct monthly expense aggregation and introduce a testable forecasting engine without disrupting the existing WealthIQ application.
+
+## 1. Protect the current project
+
+- Work in `~/Projects/wealthIQ_New` on the current branch.
+- Inspect `git status` and the relevant diffs before editing.
+- Preserve every existing modified and untracked file, especially the current changes in `app/expenses/page.tsx`, `components/ml-prediction-card.tsx`, `components/global-search.tsx`, and the transaction-classifier integration.
+- Do not reset, clean, revert, overwrite or discard existing user work.
+- Do not commit, push, or deploy.
+- Do not modify Supabase schemas, authentication, RLS policies, or the classifier configuration.
+- Inspect the existing `financial-engine.ts`, forecast page, expense page, database types, and associated tests before deciding on the smallest required changes.
+- Avoid broad refactoring or replacing entire files.
+
+## 2. Correct monthly expense aggregation
+
+Inspect `app/expenses/page.tsx` and identify every metric, chart, and summary that is intended to represent monthly spending.
+
+Implement correct calendar-month filtering using the existing `record_date` field.
+
+Requirements:
+
+- Current-month totals must include only expense records in the intended current calendar month.
+- Total Monthly, Essential, Discretionary, and category breakdowns must use consistent date-filtering rules.
+- Preserve the existing category mapping, edit/delete operations, add-expense flow, classifier suggestions, and Supabase CRUD behavior.
+- Do not alter the database schema or invent new fields.
+- Handle record dates consistently, including month boundaries and the application's local-date conventions. Avoid timezone conversions that shift a transaction into the wrong calendar date.
+- Keep historical data available for forecast calculations without accidentally summing multiple months into a current-month summary.
+- Add tests for records from different months, month/year boundaries, empty months, essential/discretionary totals, and category totals.
+
+Important data-quality limitation: an absent month in `expense_records` does not necessarily mean the user spent nothing. The database currently lacks an explicit indicator that the user completed logging expenses for a given month. Do not silently treat every missing month as a confirmed zero-spending month for forecasting eligibility.
+
+## 3. Implement an isolated deterministic forecasting engine
+
+Extend the existing forecasting calculations in `financial-engine.ts` only where appropriate. Reuse the existing types and calculation conventions wherever possible.
+
+Define a clearly typed function that accepts chronological monthly expense totals and returns:
+
+- The estimated next-calendar-month total.
+- The forecasting method used.
+- The number of usable historical months.
+- Whether the estimate is sufficiently supported or falls back to a conservative baseline.
+- A concise explanation of the method and important data limitations.
+
+Implement these candidate tiers:
+
+**Tier 0 — Insufficient history**
+
+- For users with fewer than three usable completed months, use an explicitly documented deterministic run-rate or fallback estimate where it can be calculated responsibly.
+- Do not present this as ML or a validated forecast.
+- If the available records cannot support a defensible estimate, return an insufficient-history status rather than fabricating a value.
+
+**Tier 1 — Three to five usable months**
+
+- Use a 3-month simple moving average of appropriately observed historical months.
+- Do not include the incomplete current month by default.
+- Expose the method and history depth to the caller.
+
+**Tier 2 — Six to eleven usable months**
+
+- Use a 6-month exponentially weighted moving average with alpha = 0.5, as benchmarked in Phase 10.
+- Apply a non-negative output constraint.
+- Do not describe this as machine learning.
+
+**Tier 3 — Twelve or more months**
+
+- Do not activate ML in this phase.
+- Return an explicit status indicating that the history may qualify for a future model-selection and backtesting experiment, but that no ML forecast is currently enabled.
+- A deterministic fallback may remain available.
+
+These are initial engineering tiers, not proven universal history requirements. Document the limitations and leave thresholds easy to adjust following future real-data evaluation.
+
+## 4. Data eligibility and missing-month safeguards
+
+Build monthly aggregates chronologically from the existing dated expense records without modifying the source records.
+
+- Distinguish a month with observed expenses from a month whose logging completeness is unknown.
+- Do not convert a missing month into zero spending unless the data supports that interpretation.
+- Exclude the incomplete current month from completed-month forecasting inputs by default.
+- Avoid forecasting from invalid dates, non-finite amounts, or invalid negative expenses unless an existing, documented data convention explicitly permits them.
+- Identify months with sparse coverage and insufficient history.
+- Do not create fake records to fill missing months.
+- Do not write any forecast result back to Supabase.
+
+If the current schema cannot establish whether historical months are complete, document that limitation and use a conservative fallback rather than claiming the history is fully observed.
+
+## 5. Keep the scope controlled
+
+- Do not add a new ML model.
+- Do not create a new dashboard card or substantially redesign the forecast page.
+- Do not change the existing 36-month net-worth calculations unless a verified regression requires it.
+- Do not change the transaction classifier, expense categories, database schema, or RLS.
+- Do not add external dependencies without a demonstrated need.
+- Keep forecasting functions independently testable, with clear TypeScript types and predictable outputs.
+
+If presenting the new estimate in existing forecast UI is necessary to verify wiring, make only the smallest consistent change and clearly distinguish next-month expense estimation from the existing net-worth projection.
+
+## 6. Tests and regression checks
+
+Add or run tests covering:
+
+- Tier selection for different history lengths.
+- Correct 3-month moving-average calculations.
+- Correct 6-month EWMA calculations.
+- Chronological ordering and calendar-month boundaries.
+- Partial current-month exclusion.
+- Missing-month and insufficient-history behavior.
+- Empty inputs, malformed dates, invalid values, and non-negative output.
+- Consistency between monthly expense summaries and dated source records.
+- Preservation of existing forecast calculations.
+- Preservation of expense CRUD, manual entry, classification suggestions, and Income redirection.
+
+Run the available typecheck, lint, build, and relevant tests. Report actual outputs, including failures.
+
+## 7. Stop and report
+
+Provide:
+
+1. Files inspected and changed.
+2. The exact monthly aggregation defect and how it was corrected.
+3. Forecasting formulas, eligibility rules, and missing-data safeguards.
+4. Test cases and actual results.
+5. Any UI changes and confirmation that existing CRUD remains intact.
+6. Remaining limitations, particularly missing logging-completeness information.
+7. The final Git status.
+
+Do not train ML, enable production forecasting, alter Supabase, or begin HCES benchmarking in this phase. Do not commit or push. Stop and await approval.
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-10-09T18:48:33+05:30.
+</ADDITIONAL_METADATA>

@@ -1,0 +1,74 @@
+<USER_REQUEST>
+# WealthIQ — Phase 11: Deterministic Expense Forecasting and Monthly Aggregation Fix
+
+Phase 10 established that deterministic baselines are competitive with candidate ML models on controlled synthetic spending scenarios. Real-world ML forecasting effectiveness remains unproven.
+
+Implement the next stage using deterministic calculations only. Correct monthly expense aggregation and introduce a testable forecasting engine without disrupting the existing WealthIQ application.
+
+## 1. Protect the current project
+
+- Work in `~/Projects/wealthIQ_New` on the current branch.
+- Inspect `git status` and the relevant diffs before editing.
+- Preserve every existing modified and untracked file, especially the current changes in `app/expenses/page.tsx`, `components/ml-prediction-card.tsx`, `components/global-search.tsx`, and the transaction-classifier integration.
+- Do not reset, clean, revert, overwrite or discard existing user work.
+- Do not commit, push, or deploy.
+- Do not modify Supabase schemas, authentication, RLS policies, or the classifier configuration.
+- Inspect the existing `financial-engine.ts`, forecast page, expense page, database types, and associated tests before deciding on the smallest required changes.
+- Avoid broad refactoring or replacing entire files.
+
+## 2. Correct monthly expense aggregation
+
+Inspect `app/expenses/page.tsx` and identify every metric, chart, and summary that is intended to represent monthly spending.
+
+Implement correct calendar-month filtering using the existing `record_date` field.
+
+Requirements:
+
+- Current-month totals must include only expense records in the intended current calendar month.
+- Total Monthly, Essential, Discretionary, and category breakdowns must use consistent date-filtering rules.
+- Preserve the existing category mapping, edit/delete operations, add-expense flow, classifier suggestions, and Supabase CRUD behavior.
+- Do not alter the database schema or invent new fields.
+- Handle record dates consistently, including month boundaries and the application
+<truncated 3788 bytes>
+bstantially redesign the forecast page.
+- Do not change the existing 36-month net-worth calculations unless a verified regression requires it.
+- Do not change the transaction classifier, expense categories, database schema, or RLS.
+- Do not add external dependencies without a demonstrated need.
+- Keep forecasting functions independently testable, with clear TypeScript types and predictable outputs.
+
+If presenting the new estimate in existing forecast UI is necessary to verify wiring, make only the smallest consistent change and clearly distinguish next-month expense estimation from the existing net-worth projection.
+
+## 6. Tests and regression checks
+
+Add or run tests covering:
+
+- Tier selection for different history lengths.
+- Correct 3-month moving-average calculations.
+- Correct 6-month EWMA calculations.
+- Chronological ordering and calendar-month boundaries.
+- Partial current-month exclusion.
+- Missing-month and insufficient-history behavior.
+- Empty inputs, malformed dates, invalid values, and non-negative output.
+- Consistency between monthly expense summaries and dated source records.
+- Preservation of existing forecast calculations.
+- Preservation of expense CRUD, manual entry, classification suggestions, and Income redirection.
+
+Run the available typecheck, lint, build, and relevant tests. Report actual outputs, including failures.
+
+## 7. Stop and report
+
+Provide:
+
+1. Files inspected and changed.
+2. The exact monthly aggregation defect and how it was corrected.
+3. Forecasting formulas, eligibility rules, and missing-data safeguards.
+4. Test cases and actual results.
+5. Any UI changes and confirmation that existing CRUD remains intact.
+6. Remaining limitations, particularly missing logging-completeness information.
+7. The final Git status.
+
+Do not train ML, enable production forecasting, alter Supabase, or begin HCES benchmarking in this phase. Do not commit or push. Stop and await approval.
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-10-09T18:48:33+05:30.
+</ADDITIONAL_METADATA>

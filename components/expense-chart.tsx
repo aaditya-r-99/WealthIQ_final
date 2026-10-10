@@ -14,7 +14,7 @@ import {
   Legend,
 } from 'recharts';
 import type { ExpenseChartData } from '@/lib/types';
-import { formatCurrency } from '@/lib/format';
+import { formatCurrency, formatCompactINR } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 interface ExpenseChartProps {
@@ -55,6 +55,8 @@ export function ExpenseChart({ data, type = 'bar', className }: ExpenseChartProp
                 border: '1px solid hsl(var(--border))',
                 borderRadius: '8px',
                 fontSize: '13px',
+                color: 'hsl(var(--card-foreground))',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
               }}
               formatter={(value: number) => formatCurrency(value)}
             />
@@ -71,7 +73,7 @@ export function ExpenseChart({ data, type = 'bar', className }: ExpenseChartProp
   return (
     <div className={className}>
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+        <BarChart data={data} margin={{ top: 10, right: 16, left: 12, bottom: 0 }}>
           <CartesianGrid
             strokeDasharray="3 3"
             stroke="hsl(var(--border))"
@@ -89,10 +91,12 @@ export function ExpenseChart({ data, type = 'bar', className }: ExpenseChartProp
           />
           <YAxis
             stroke="hsl(var(--muted-foreground))"
-            fontSize={12}
+            fontSize={11}
+            width={60}
             tickLine={false}
             axisLine={false}
-            tickFormatter={(value) => formatCurrency(value).replace(/\s/g, '')}
+            tickMargin={6}
+            tickFormatter={formatCompactINR}
           />
           <Tooltip
             contentStyle={{
@@ -100,6 +104,8 @@ export function ExpenseChart({ data, type = 'bar', className }: ExpenseChartProp
               border: '1px solid hsl(var(--border))',
               borderRadius: '8px',
               fontSize: '13px',
+              color: 'hsl(var(--card-foreground))',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
             }}
             formatter={(value: number) => formatCurrency(value)}
             cursor={{ fill: 'hsl(var(--muted))', opacity: 0.3 }}

@@ -75,9 +75,9 @@ export default function RegisterPage() {
           <ul className="space-y-3">
             {[
               'Comprehensive Financial Health Score',
-              'AI-powered spending risk analysis',
-              'Personalized recommendations',
-              'Financial forecasting',
+              'Transparent spending risk analysis',
+              'Smart Indian transaction classification',
+              'Multi-year net worth forecasting',
             ].map((item) => (
               <li key={item} className="flex items-center gap-2 text-sidebar-muted">
                 <Check className="h-4 w-4 text-sidebar-accent" />

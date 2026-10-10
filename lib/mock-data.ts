@@ -10,7 +10,6 @@
 import type {
   FinancialScore,
   ScoreBreakdown,
-  Recommendation,
   FinancialHistoryPoint,
   ForecastPoint,
   ExpenseChartData,
@@ -85,60 +84,7 @@ export const MOCK_SCORE_BREAKDOWN: ScoreBreakdown = {
   health_category: 'Moderate',
 };
 
-export const MOCK_RECOMMENDATIONS: Recommendation[] = [
-  {
-    id: 'rec-1',
-    user_id: 'mock-user-1',
-    category: 'Emergency Fund',
-    priority: 'High',
-    severity: 0.82,
-    title: 'Build your emergency fund to 3-6 months of expenses',
-    reason:
-      'Your emergency fund covers only 2.5 months of essential expenses, below the recommended 3-6 month range.',
-    suggested_action:
-      'Prioritize building emergency savings before increasing higher-risk investments.',
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: 'rec-2',
-    user_id: 'mock-user-1',
-    category: 'Expenses',
-    priority: 'Medium',
-    severity: 0.61,
-    title: 'Review discretionary spending categories',
-    reason:
-      'Discretionary expenses make up 16.5% of your income. Reducing non-essential spending can improve your savings rate.',
-    suggested_action:
-      'Track entertainment and shopping expenses and set a monthly discretionary budget.',
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: 'rec-3',
-    user_id: 'mock-user-1',
-    category: 'Investment Diversification',
-    priority: 'Medium',
-    severity: 0.55,
-    title: 'Review your investment allocation',
-    reason:
-      'Your portfolio is concentrated in a few assets. Diversification can help manage risk.',
-    suggested_action:
-      'Review whether your current investment allocation aligns with your stated risk tolerance.',
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: 'rec-4',
-    user_id: 'mock-user-1',
-    category: 'Savings',
-    priority: 'Low',
-    severity: 0.40,
-    title: 'Automate your monthly savings',
-    reason:
-      'Automating savings ensures consistency and reduces the temptation to spend.',
-    suggested_action:
-      'Set up an automatic transfer to your savings account on payday.',
-    created_at: new Date().toISOString(),
-  },
-];
+
 
 export const MOCK_HISTORY: FinancialHistoryPoint[] = [
   { id: 'h1', user_id: 'mock-user-1', month: 'Jan', income: 82000, expenses: 55000, savings: 27000, debt: 350000, investments: 70000, fd_value: 140000, net_worth: 187000, created_at: '' },
@@ -237,11 +183,58 @@ export const MOCK_MARKET_INSIGHTS: MarketInsight[] = [
 ];
 
 export const MOCK_FD_RATES: FDRate[] = [
-  { bank_name: 'SBI', tenure_months: 12, regular_interest_rate: 6.8, senior_citizen_interest_rate: 7.3, minimum_amount: 1000, premature_withdrawal_notes: '0.5% penalty on applicable rate', last_updated: '2024-01-15' },
-  { bank_name: 'HDFC', tenure_months: 12, regular_interest_rate: 7.0, senior_citizen_interest_rate: 7.5, minimum_amount: 5000, premature_withdrawal_notes: '1% penalty on applicable rate', last_updated: '2024-01-15' },
-  { bank_name: 'ICICI', tenure_months: 12, regular_interest_rate: 7.1, senior_citizen_interest_rate: 7.6, minimum_amount: 5000, premature_withdrawal_notes: '1% penalty on applicable rate', last_updated: '2024-01-15' },
-  { bank_name: 'Axis', tenure_months: 12, regular_interest_rate: 7.0, senior_citizen_interest_rate: 7.55, minimum_amount: 5000, premature_withdrawal_notes: '1% penalty on applicable rate', last_updated: '2024-01-15' },
-  { bank_name: 'Kotak', tenure_months: 12, regular_interest_rate: 7.25, senior_citizen_interest_rate: 7.75, minimum_amount: 5000, premature_withdrawal_notes: '1% penalty on applicable rate', last_updated: '2024-01-15' },
+  {
+    bank_name: 'SBI',
+    tenure_months: 12,
+    regular_interest_rate: 6.25,
+    senior_citizen_interest_rate: 6.75,
+    minimum_amount: 1000,
+    premature_withdrawal_notes: '0.50% penalty up to ₹5L; 1.00% above ₹5L on applicable card rate',
+    last_updated: '2026-10-10',
+    effective_date: '2025-12-15 (Current in Oct 2026)',
+    source_url: 'https://sbi.bank.in/web/interest-rates/deposit-rates/retail-domestic-term-deposits',
+    deposit_limit: 'Retail (< ₹3 Crore)',
+    compounding_notes: 'Quarterly compounding on cumulative reinvestment deposits',
+  },
+  {
+    bank_name: 'HDFC',
+    tenure_months: 12,
+    regular_interest_rate: 6.25,
+    senior_citizen_interest_rate: 6.75,
+    minimum_amount: 5000,
+    premature_withdrawal_notes: '1.00% penalty on applicable rate. Senior citizen benefit applies to domestic deposits',
+    last_updated: '2026-10-10',
+    effective_date: '2026-08-19 (Current in Oct 2026)',
+    source_url: 'https://www.hdfc.bank.in/fixed-deposit/fd-interest-rate',
+    deposit_limit: 'Retail (< ₹3 Crore)',
+    compounding_notes: 'Quarterly compounding for cumulative deposits',
+  },
+  {
+    bank_name: 'ICICI',
+    tenure_months: 12,
+    regular_interest_rate: 6.25,
+    senior_citizen_interest_rate: 6.75,
+    minimum_amount: 10000,
+    premature_withdrawal_notes: '0.50% penalty for < 1 yr; 1.00% penalty for >= 1 yr on contracted rate',
+    last_updated: '2026-10-10',
+    effective_date: '2026-10-09 (Current in Oct 2026)',
+    source_url: 'https://www.icici.bank.in/personal-banking/deposits/fixed-deposit/fd-interest-rates',
+    deposit_limit: 'Retail (< ₹3 Crore)',
+    compounding_notes: 'Quarterly compounding on cumulative deposits',
+  },
+  {
+    bank_name: 'RBL',
+    tenure_months: 12,
+    regular_interest_rate: 7.40,
+    senior_citizen_interest_rate: 8.00,
+    minimum_amount: 1000,
+    premature_withdrawal_notes: '1.00% penalty on applicable rate. Senior citizens (+0.50%) and Super Senior (+0.75%) applicable',
+    last_updated: '2026-10-10',
+    effective_date: '2026-10-01 (Current in Oct 2026)',
+    source_url: 'https://www.rbl.bank.in/interest-rates?tab=fixed-deposit',
+    deposit_limit: 'Retail (< ₹3 Crore)',
+    compounding_notes: 'Quarterly compounding for >= 181 days; simple interest for < 181 days',
+  },
 ];
 
 export const MOCK_INCOME_RECORDS: IncomeRecord[] = [

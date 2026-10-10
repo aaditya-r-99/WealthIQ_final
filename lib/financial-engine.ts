@@ -10,8 +10,6 @@ import type {
   RiskLevel,
   FinancialFeatures,
   ForecastPoint,
-  Recommendation,
-  Priority,
 } from '@/lib/types';
 import { supabase } from '@/lib/supabase/client';
 
@@ -56,6 +54,38 @@ export interface ForecastHorizonPoint {
   debt: number;
 }
 
+export type ForecastingTier = 'tier_0' | 'tier_1' | 'tier_2' | 'tier_3';
+
+export type ForecastingMethod =
+  | 'insufficient_history'
+  | 'run_rate_fallback'
+  | '3m_simple_moving_average'
+  | '6m_exponential_weighted_moving_average'
+  | 'deterministic_fallback_mature';
+
+export interface MonthlyExpenseAggregate {
+  month: string; // 'YYYY-MM'
+  total: number;
+  essential: number;
+  discretionary: number;
+  recordCount: number;
+  categories: Record<string, number>;
+}
+
+export interface NextMonthExpenseForecastResult {
+  tier: ForecastingTier;
+  method: ForecastingMethod;
+  method_name: string;
+  estimated_amount: number | null;
+  usable_months_count: number;
+  usable_months: string[];
+  target_month: string; // 'YYYY-MM'
+  is_supported: boolean;
+  explanation: string;
+  data_limitations: string[];
+  historical_aggregates: MonthlyExpenseAggregate[];
+}
+
 export interface FinancialForecastResult {
   monthly_income: number;
   monthly_expenses: number;
@@ -76,6 +106,7 @@ export interface FinancialForecastResult {
     m36: ForecastHorizonPoint;
   };
   assumptions: string[];
+  next_month_expense_forecast?: NextMonthExpenseForecastResult;
 }
 
 /**
@@ -559,249 +590,345 @@ export function calculateFinancialForecast(
       m36,
     },
     assumptions,
+    next_month_expense_forecast: calculateNextMonthExpenseForecast(data.expenseRecords),
+  };
+}
+
+// ============================================================
+// Phase 11: Deterministic Expense Forecasting & Aggregation
+// ============================================================
+
+/**
+ * Timezone-invariant extraction of calendar month (YYYY-MM) from an ISO date string (YYYY-MM-DD).
+ * Avoids JavaScript `new Date()` shifts across negative UTC offset boundaries.
+ */
+export function getRecordMonth(dateStr: string | null | undefined): string | null {
+  if (!dateStr || typeof dateStr !== 'string') return null;
+  const trimmed = dateStr.trim();
+  const match = trimmed.match(/^(\d{4})-(0[1-9]|1[0-2])(-\d{2})?/);
+  if (!match) return null;
+  return `${match[1]}-${match[2]}`;
+}
+
+/**
+ * Returns the current local calendar month in 'YYYY-MM' format.
+ */
+export function getCurrentCalendarMonth(referenceDate = new Date()): string {
+  const year = referenceDate.getFullYear();
+  const month = String(referenceDate.getMonth() + 1).padStart(2, '0');
+  return `${year}-${month}`;
+}
+
+/**
+ * Computes next calendar month in 'YYYY-MM' format (handles December -> January rollover).
+ */
+export function getNextCalendarMonth(monthStr: string): string {
+  if (!monthStr || typeof monthStr !== 'string') return '';
+  const parts = monthStr.split('-');
+  if (parts.length < 2) return monthStr;
+  const year = parseInt(parts[0], 10);
+  let month = parseInt(parts[1], 10);
+  if (isNaN(year) || isNaN(month)) return monthStr;
+  month += 1;
+  if (month > 12) {
+    return `${year + 1}-01`;
+  }
+  return `${year}-${String(month).padStart(2, '0')}`;
+}
+
+/**
+ * Computes previous calendar month in 'YYYY-MM' format (handles January -> December rollover).
+ */
+export function getPreviousCalendarMonth(monthStr: string): string {
+  if (!monthStr || typeof monthStr !== 'string') return '';
+  const parts = monthStr.split('-');
+  if (parts.length < 2) return monthStr;
+  const year = parseInt(parts[0], 10);
+  let month = parseInt(parts[1], 10);
+  if (isNaN(year) || isNaN(month)) return monthStr;
+  month -= 1;
+  if (month < 1) {
+    return `${year - 1}-12`;
+  }
+  return `${year}-${String(month).padStart(2, '0')}`;
+}
+
+/**
+ * Formats 'YYYY-MM' into human-readable month string (e.g., '2026-10' -> 'October 2026').
+ */
+export function formatMonthDisplay(monthStr: string): string {
+  if (!monthStr || typeof monthStr !== 'string') return '';
+  const parts = monthStr.split('-');
+  if (parts.length < 2) return monthStr;
+  const year = parts[0];
+  const monthIdx = parseInt(parts[1], 10) - 1;
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
+  ];
+  if (monthIdx >= 0 && monthIdx < 12) {
+    return `${monthNames[monthIdx]} ${year}`;
+  }
+  return monthStr;
+}
+
+/**
+ * Detects missing calendar months in an array of 'YYYY-MM' strings.
+ */
+export function detectMonthGaps(months: string[]): { hasGaps: boolean; missingMonths: string[] } {
+  if (months.length <= 1) {
+    return { hasGaps: false, missingMonths: [] };
+  }
+  const uniqueSorted = Array.from(new Set(months)).sort();
+  const missingMonths: string[] = [];
+
+  for (let i = 0; i < uniqueSorted.length - 1; i++) {
+    const curr = uniqueSorted[i];
+    const next = uniqueSorted[i + 1];
+    let candidate = getNextCalendarMonth(curr);
+    while (candidate && candidate < next) {
+      missingMonths.push(candidate);
+      candidate = getNextCalendarMonth(candidate);
+    }
+  }
+
+  return {
+    hasGaps: missingMonths.length > 0,
+    missingMonths,
   };
 }
 
 /**
- * Step 7: Deterministic Personalized Recommendations.
- * Evaluates the user's real financial ratios, health score, and risk level
- * to generate educational, explainable suggestions.
+ * Aggregates expense records chronologically into monthly buckets.
+ * - Filters out invalid dates, non-finite amounts, and negative expenses.
+ * - Optionally excludes a specified month (e.g. the incomplete current month).
+ * - Preserves category breakdowns and essential vs. discretionary sums.
  */
-export function generatePersonalizedRecommendations(
-  features: FinancialFeatures,
-  healthScore: number,
-  spendingRisk: RiskLevel,
-  data: FinancialData,
-  userId = 'user'
-): Recommendation[] {
-  const recommendations: Recommendation[] = [];
-  const now = new Date().toISOString();
+export function aggregateMonthlyExpenses(
+  records: ExpenseRow[],
+  options?: {
+    excludeMonth?: string;
+  }
+): MonthlyExpenseAggregate[] {
+  const monthMap = new Map<string, MonthlyExpenseAggregate>();
 
-  const {
-    monthly_income,
-    monthly_expenses,
-    discretionary_expenses,
-    essential_expenses,
-    investment_value,
-    savings_rate,
-    expense_ratio,
-    discretionary_expense_ratio,
-    debt_to_income,
-    emergency_fund_months,
-    total_debt,
-    monthly_emi,
-  } = features;
+  for (const rec of records) {
+    const month = getRecordMonth(rec.record_date);
+    if (!month) continue; // Skip invalid or missing date
+    if (options?.excludeMonth && month === options.excludeMonth) continue;
 
-  const totalAssets = investment_value + (data.fdRecords || []).reduce((s, f) => s + Number(f.principal || 0), 0);
+    const amount = Number(rec.amount);
+    // Sanity check: must be finite and non-negative
+    if (!Number.isFinite(amount) || amount < 0) continue;
 
-  // 1. Income Check
-  if (data.incomeRecords.length === 0 || monthly_income === 0) {
-    recommendations.push({
-      id: 'rec-income-missing',
-      user_id: userId,
-      category: 'Financial Planning',
-      priority: 'High',
-      severity: 0.95,
-      title: 'Record Your Monthly Income Streams',
-      reason: 'No monthly income records are currently tracked. Income is the cornerstone metric for calculating savings rate, debt ratios, and accurate forecasts.',
-      suggested_action: 'Navigate to the Income module and add your recurring primary salary, freelance, or business revenue.',
-      created_at: now,
-    });
+    let agg = monthMap.get(month);
+    if (!agg) {
+      agg = {
+        month,
+        total: 0,
+        essential: 0,
+        discretionary: 0,
+        recordCount: 0,
+        categories: {},
+      };
+      monthMap.set(month, agg);
+    }
+
+    agg.total += amount;
+    agg.recordCount += 1;
+    if (rec.expense_type === 'essential') {
+      agg.essential += amount;
+    } else if (rec.expense_type === 'discretionary') {
+      agg.discretionary += amount;
+    }
+
+    const cat = rec.category || 'Other';
+    agg.categories[cat] = (agg.categories[cat] || 0) + amount;
   }
 
-  // 2. High Expense Ratio / Deficit Check
-  if (monthly_income > 0 && (monthly_expenses > monthly_income || expense_ratio > 0.85)) {
-    recommendations.push({
-      id: 'rec-expenses-critical',
-      user_id: userId,
-      category: 'Expenses',
-      priority: 'High',
-      severity: 0.9,
-      title: 'Curtail High Expense Burden',
-      reason: `Your monthly expenses (₹${Math.round(monthly_expenses).toLocaleString('en-IN')}) consume ${Math.round(expense_ratio * 100)}% of income, creating a cash deficit or critically thin buffer.`,
-      suggested_action: `Review non-essential outlays (currently ₹${Math.round(discretionary_expenses).toLocaleString('en-IN')}/mo). Aim to trim discretionary purchases by 10%–15% to restore positive cash flow.`,
-      created_at: now,
-    });
-  } else if (monthly_income > 0 && (expense_ratio > 0.65 || discretionary_expense_ratio > 0.25)) {
-    recommendations.push({
-      id: 'rec-expenses-moderate',
-      user_id: userId,
-      category: 'Expenses',
-      priority: 'Medium',
-      severity: 0.6,
-      title: 'Optimize Discretionary Spending',
-      reason: `Your overall expense ratio is ${Math.round(expense_ratio * 100)}% with discretionary purchases accounting for ${Math.round(discretionary_expense_ratio * 100)}% of income.`,
-      suggested_action: 'Audit recurring subscriptions and leisure expenditures to redirect an extra 5% of monthly income toward your emergency reserve.',
-      created_at: now,
-    });
-  }
+  // Sort chronological ascending (oldest to newest)
+  return Array.from(monthMap.values()).sort((a, b) => a.month.localeCompare(b.month));
+}
 
-  // 3. Savings Rate Check
-  if (monthly_income > 0 && savings_rate < 0.10 && monthly_expenses <= monthly_income) {
-    recommendations.push({
-      id: 'rec-savings-low',
-      user_id: userId,
-      category: 'Savings',
-      priority: 'High',
-      severity: 0.85,
-      title: 'Increase Monthly Savings Rate',
-      reason: `Your savings rate is ${Math.round(savings_rate * 100)}%, below the healthy financial benchmark of 20%.`,
-      suggested_action: 'Automate a standing transfer of 10% of your earnings on payday before allocating funds to non-essential spending.',
-      created_at: now,
-    });
-  } else if (monthly_income > 0 && savings_rate >= 0.10 && savings_rate < 0.20) {
-    recommendations.push({
-      id: 'rec-savings-moderate',
-      user_id: userId,
-      category: 'Savings',
-      priority: 'Medium',
-      severity: 0.5,
-      title: 'Scale Toward 20% Savings Rate',
-      reason: `You are currently saving ${Math.round(savings_rate * 100)}% of your income. Increasing this to 20% strengthens resilience against unexpected disruptions.`,
-      suggested_action: 'Gradually increase your monthly savings allocation by 2% each quarter to systematically reach the 20% target.',
-      created_at: now,
-    });
+/**
+ * Step 8: Deterministic Next-Month Expense Forecasting Engine
+ * Evaluates chronological monthly aggregates against candidate history tiers:
+ * - Tier 0: < 3 completed months (run-rate fallback or insufficient history)
+ * - Tier 1: 3 to 5 completed months (3-month SMA)
+ * - Tier 2: 6 to 11 completed months (6-month EWMA alpha = 0.5)
+ * - Tier 3: 12+ completed months (mature history reserved for future ML; 6M EWMA deterministic fallback)
+ *
+ * Missing-month & data eligibility safeguards:
+ * - Incomplete current month is excluded from historical moving averages by default.
+ * - Missing months are NOT fabricated as ₹0. Gaps are identified in data_limitations.
+ * - Output is strictly non-negative.
+ * - Zero database writes; pure deterministic calculation.
+ */
+export function calculateNextMonthExpenseForecast(
+  records: ExpenseRow[],
+  options?: {
+    currentMonth?: string;
+    excludeCurrentMonth?: boolean;
   }
+): NextMonthExpenseForecastResult {
+  const currentMonth = options?.currentMonth || getCurrentCalendarMonth();
+  const excludeCurrent = options?.excludeCurrentMonth !== false; // default true
 
-  // 4. Emergency Fund Coverage Check
-  if (emergency_fund_months < 1.0 && (essential_expenses > 0 || monthly_expenses > 0)) {
-    recommendations.push({
-      id: 'rec-emergency-critical',
-      user_id: userId,
-      category: 'Emergency Fund',
-      priority: 'High',
-      severity: 0.95,
-      title: 'Build Immediate Emergency Reserves',
-      reason: `Your emergency fund covers only ${emergency_fund_months.toFixed(1)} months of essential living costs (benchmark is 3–6 months, ~₹${Math.round((essential_expenses || monthly_expenses) * 3).toLocaleString('en-IN')}).`,
-      suggested_action: 'Direct all available monthly surplus into a dedicated liquid savings account until at least 1–3 months of expenses are secured.',
-      created_at: now,
-    });
-  } else if (emergency_fund_months < 3.0 && (essential_expenses > 0 || monthly_expenses > 0)) {
-    recommendations.push({
-      id: 'rec-emergency-moderate',
-      user_id: userId,
-      category: 'Emergency Fund',
-      priority: 'Medium',
-      severity: 0.65,
-      title: 'Strengthen Emergency Cushion',
-      reason: `Your emergency savings cover ${emergency_fund_months.toFixed(1)} months of expenses. Expanding this to 3–6 months protects against unforeseen emergencies.`,
-      suggested_action: 'Continue allocating a portion of your monthly savings toward your emergency fund until you hit a 3–6 month threshold.',
-      created_at: now,
-    });
-  } else if (emergency_fund_months >= 6.0) {
-    recommendations.push({
-      id: 'rec-emergency-healthy',
-      user_id: userId,
-      category: 'Emergency Fund',
-      priority: 'Low',
-      severity: 0.2,
-      title: 'Emergency Reserve Fully Funded',
-      reason: `You have ${emergency_fund_months.toFixed(1)} months of living expenses safely preserved in emergency reserves.`,
-      suggested_action: 'Your safety net is in place. You can safely direct any additional cash surplus beyond this threshold into long-term wealth building.',
-      created_at: now,
-    });
-  }
-
-  // 5. Debt Burden Check
-  if (monthly_income > 0 && debt_to_income > 0.40) {
-    recommendations.push({
-      id: 'rec-debt-high',
-      user_id: userId,
-      category: 'Debt',
-      priority: 'High',
-      severity: 0.9,
-      title: 'Prioritize Debt Amortization',
-      reason: `Monthly EMI commitments (₹${Math.round(monthly_emi).toLocaleString('en-IN')}) absorb ${Math.round(debt_to_income * 100)}% of your income, representing a heavy fixed burden.`,
-      suggested_action: 'Target highest-interest liabilities first (avalanche method) and look into refinancing or consolidating to lower aggregate monthly payments.',
-      created_at: now,
-    });
-  } else if (monthly_income > 0 && debt_to_income > 0.20) {
-    recommendations.push({
-      id: 'rec-debt-moderate',
-      user_id: userId,
-      category: 'Debt',
-      priority: 'Medium',
-      severity: 0.55,
-      title: 'Manage Outstanding Debt Load',
-      reason: `Your debt-to-income ratio is ${Math.round(debt_to_income * 100)}% across ₹${Math.round(total_debt).toLocaleString('en-IN')} in total balances.`,
-      suggested_action: 'Avoid opening new credit lines and dedicate any variable windfalls or bonuses toward paying down principal balance.',
-      created_at: now,
-    });
-  } else if (total_debt === 0 && monthly_income > 0) {
-    recommendations.push({
-      id: 'rec-debt-free',
-      user_id: userId,
-      category: 'Debt',
-      priority: 'Low',
-      severity: 0.1,
-      title: 'Debt-Free Flexibility',
-      reason: 'You have zero recorded debt and no monthly EMI obligations, maximizing your discretionary cash flow.',
-      suggested_action: 'Maintain your debt-free status and deploy surplus cash into diversified, inflation-hedging asset classes.',
-      created_at: now,
-    });
-  }
-
-  // 6. Investments & Asset Base Check
-  if (totalAssets === 0) {
-    recommendations.push({
-      id: 'rec-investments-none',
-      user_id: userId,
-      category: 'Investment Diversification',
-      priority: 'Medium',
-      severity: 0.7,
-      title: 'Begin Asset Allocation Strategy',
-      reason: 'You currently have zero active investments or fixed deposits recorded in your portfolio.',
-      suggested_action: 'Once your emergency fund is initiated, explore conservative, diversified index funds or fixed deposits to protect purchasing power against inflation.',
-      created_at: now,
-    });
-  } else if (monthly_income > 0 && totalAssets < monthly_income * 2) {
-    recommendations.push({
-      id: 'rec-investments-grow',
-      user_id: userId,
-      category: 'Investment Diversification',
-      priority: 'Medium',
-      severity: 0.5,
-      title: 'Expand Long-Term Asset Holdings',
-      reason: `Your total asset holdings (₹${Math.round(totalAssets).toLocaleString('en-IN')}) are relatively modest compared to your annual cash flow.`,
-      suggested_action: 'Set up systematic monthly contributions (e.g. SIPs) to dollar-cost average into diversified broad-market holdings.',
-      created_at: now,
-    });
-  } else if (investment_value > 0) {
-    recommendations.push({
-      id: 'rec-investments-review',
-      user_id: userId,
-      category: 'Investment Diversification',
-      priority: 'Low',
-      severity: 0.25,
-      title: 'Maintain Portfolio Allocation',
-      reason: `You have ₹${Math.round(investment_value).toLocaleString('en-IN')} in active investment holdings across your portfolio.`,
-      suggested_action: 'Periodically rebalance your asset allocation across equity, debt, and liquid instruments to match your changing life horizons.',
-      created_at: now,
-    });
-  }
-
-  // 7. General Financial Health & Positive Reinforcement
-  if (healthScore >= 75 && spendingRisk === 'Low') {
-    recommendations.push({
-      id: 'rec-health-excellent',
-      user_id: userId,
-      category: 'Financial Planning',
-      priority: 'Low',
-      severity: 0.15,
-      title: 'Maintain Healthy Financial Rhythm',
-      reason: `Your Financial Health Score of ${healthScore}/100 and Low Spending Risk reflect solid financial discipline and budgeting control.`,
-      suggested_action: 'Keep up your consistent saving and investing habits, and review long-term retirement and milestone goals on an annual basis.',
-      created_at: now,
-    });
-  }
-
-  // Sort by priority (High -> Medium -> Low), then severity descending
-  const priorityOrder: Record<Priority, number> = { High: 0, Medium: 1, Low: 2 };
-  recommendations.sort((a, b) => {
-    const pDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
-    if (pDiff !== 0) return pDiff;
-    return b.severity - a.severity;
+  // Aggregate completed historical months
+  const completedAggregates = aggregateMonthlyExpenses(records, {
+    excludeMonth: excludeCurrent ? currentMonth : undefined,
   });
 
-  return recommendations;
+  const usable_months = completedAggregates.map((a) => a.month);
+  const N = usable_months.length;
+  const target_month = getNextCalendarMonth(currentMonth);
+
+  // Check for month gaps in history
+  const { hasGaps, missingMonths } = detectMonthGaps(usable_months);
+
+  const baseLimitations: string[] = [
+    'Missing logging completeness indicator: an absent month does not confirm zero expenditure; only observed records are factored.',
+    'Cash or untracked transactions outside the app are not captured.',
+    'Forecast is a deterministic mathematical baseline, not a machine learning model.',
+  ];
+
+  if (hasGaps) {
+    baseLimitations.unshift(
+      `Historical record sequence contains ${missingMonths.length} unlogged month gap(s) (${missingMonths.join(', ')}). Averages are computed strictly across observed months.`
+    );
+  }
+
+  // Tier 0: Insufficient History (< 3 usable completed months)
+  if (N < 3) {
+    if (N === 0) {
+      // Check if current month has any expenses logged
+      const currentMonthRecords = records.filter(
+        (r) => getRecordMonth(r.record_date) === currentMonth && Number(r.amount) >= 0
+      );
+      const currentMonthLoggedTotal = currentMonthRecords.reduce((s, r) => s + Number(r.amount), 0);
+
+      const limitations = [...baseLimitations];
+      if (currentMonthRecords.length > 0) {
+        limitations.unshift(
+          `Current month (${currentMonth}) has ${currentMonthRecords.length} record(s) totaling ₹${Math.round(currentMonthLoggedTotal).toLocaleString('en-IN')}, but is still in progress and excluded from historical baseline.`
+        );
+      }
+
+      return {
+        tier: 'tier_0',
+        method: 'insufficient_history',
+        method_name: 'Insufficient History',
+        estimated_amount: null,
+        usable_months_count: 0,
+        usable_months: [],
+        target_month,
+        is_supported: false,
+        explanation:
+          'Insufficient completed historical expense data. WealthIQ requires at least 1 completed month of recorded expenses to establish a run-rate estimate, and 3+ completed months for trend forecasting.',
+        data_limitations: limitations,
+        historical_aggregates: completedAggregates,
+      };
+    }
+
+    // 1 or 2 completed months available: Run-rate fallback
+    const totalSum = completedAggregates.reduce((s, a) => s + a.total, 0);
+    const runRate = totalSum / N;
+    const estimated_amount = Math.max(0, Math.round(runRate));
+
+    const limitations = [
+      `Only ${N} completed month(s) of history observed (${usable_months.join(', ')}). Minimum 3 completed months required for moving-average trend forecasting.`,
+      ...baseLimitations,
+    ];
+
+    return {
+      tier: 'tier_0',
+      method: 'run_rate_fallback',
+      method_name: 'Deterministic Run-Rate Fallback',
+      estimated_amount,
+      usable_months_count: N,
+      usable_months,
+      target_month,
+      is_supported: false,
+      explanation: `Deterministic run-rate baseline calculated as the average across ${N} completed month(s) (₹${estimated_amount.toLocaleString('en-IN')}/mo). Not a validated trend forecast.`,
+      data_limitations: limitations,
+      historical_aggregates: completedAggregates,
+    };
+  }
+
+  // Tier 1: 3 to 5 usable completed months (3M SMA)
+  if (N >= 3 && N <= 5) {
+    const recent3 = completedAggregates.slice(-3);
+    const sma3 = recent3.reduce((s, a) => s + a.total, 0) / 3;
+    const estimated_amount = Math.max(0, Math.round(sma3));
+
+    return {
+      tier: 'tier_1',
+      method: '3m_simple_moving_average',
+      method_name: '3-Month Simple Moving Average (SMA)',
+      estimated_amount,
+      usable_months_count: N,
+      usable_months,
+      target_month,
+      is_supported: true,
+      explanation: `Calculated as the unweighted 3-month simple moving average across the 3 most recent completed months (${recent3.map((a) => a.month).join(', ')}).`,
+      data_limitations: baseLimitations,
+      historical_aggregates: completedAggregates,
+    };
+  }
+
+  // Tier 2: 6 to 11 usable completed months (6M EWMA alpha = 0.5)
+  if (N >= 6 && N <= 11) {
+    const recent6 = completedAggregates.slice(-6);
+    const subset = recent6.map((a) => a.total);
+    let ewma = subset[0];
+    const alpha = 0.5;
+    for (let i = 1; i < subset.length; i++) {
+      ewma = alpha * subset[i] + (1.0 - alpha) * ewma;
+    }
+    const estimated_amount = Math.max(0, Math.round(ewma));
+
+    return {
+      tier: 'tier_2',
+      method: '6m_exponential_weighted_moving_average',
+      method_name: '6-Month Exponentially Weighted Moving Average (EWMA)',
+      estimated_amount,
+      usable_months_count: N,
+      usable_months,
+      target_month,
+      is_supported: true,
+      explanation: `Calculated using a 6-month exponentially weighted moving average (alpha = 0.5) weighting recent months higher across (${recent6.map((a) => a.month).join(', ')}).`,
+      data_limitations: baseLimitations,
+      historical_aggregates: completedAggregates,
+    };
+  }
+
+  // Tier 3: 12 or more months (Mature history - ML dormant, deterministic fallback)
+  const recent6 = completedAggregates.slice(-6);
+  const subset = recent6.map((a) => a.total);
+  let ewma = subset[0];
+  const alpha = 0.5;
+  for (let i = 1; i < subset.length; i++) {
+    ewma = alpha * subset[i] + (1.0 - alpha) * ewma;
+  }
+  const estimated_amount = Math.max(0, Math.round(ewma));
+
+  const tier3Limitations = [
+    `User has ${N} completed months of recorded history, qualifying for future model-selection and walk-forward backtesting experiments.`,
+    'No machine learning model is currently active in this phase; deterministic 6M EWMA fallback is utilized.',
+    ...baseLimitations,
+  ];
+
+  return {
+    tier: 'tier_3',
+    method: 'deterministic_fallback_mature',
+    method_name: 'Deterministic Fallback (12+ Months Mature History)',
+    estimated_amount,
+    usable_months_count: N,
+    usable_months,
+    target_month,
+    is_supported: true,
+    explanation: `History depth (${N} months) qualifies for future model-selection experiments. Machine learning is currently dormant; deterministic 6-month EWMA fallback is applied.`,
+    data_limitations: tier3Limitations,
+    historical_aggregates: completedAggregates,
+  };
 }

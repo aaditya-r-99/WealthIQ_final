@@ -26,9 +26,9 @@ export function BrandedLoadingScreen({
     >
       <div className="relative mb-5 flex items-center justify-center">
         {/* Subtle breathing glow */}
-        <div className="absolute -inset-3 rounded-2xl bg-gradient-to-r from-sky-500/20 via-blue-600/25 to-indigo-600/20 blur-lg animate-pulse" />
+        <div className="absolute -inset-2 rounded-2xl bg-slate-300/30 blur-md animate-pulse dark:bg-slate-700/30" />
         <div className="relative transform transition-transform duration-500 hover:scale-105">
-          <WealthIQIcon size={56} className="shadow-lg shadow-primary/20" />
+          <WealthIQIcon size={56} className="shadow-md shadow-black/10" />
         </div>
       </div>
 
@@ -37,14 +37,14 @@ export function BrandedLoadingScreen({
           Wealth<span className="text-primary">IQ</span>
         </h2>
         <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-          Financial Health AI
+          Personal Finance & Analytics
         </p>
       </div>
 
       {/* Small subtle loading bar indicator */}
-      <div className="w-36 h-1 bg-muted/80 rounded-full overflow-hidden mb-3.5">
+      <div className="w-36 h-1 bg-muted rounded-full overflow-hidden mb-3.5">
         <div
-          className="h-full w-full bg-gradient-to-r from-sky-400 via-blue-600 to-indigo-500 rounded-full animate-pulse"
+          className="h-full w-full bg-foreground/80 rounded-full animate-pulse"
           style={{
             animationDuration: '1.4s',
           }}

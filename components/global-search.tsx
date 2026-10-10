@@ -129,13 +129,13 @@ const CORE_PAGES: SearchItem[] = [
     keywords: ['forecast', 'projections', 'future', 'simulation', 'net worth trajectory', 'surplus'],
   },
   {
-    id: 'page-recommendations',
-    title: 'Recommendations',
-    subtitle: 'Personalized, prioritized financial health optimization',
-    url: '/recommendations',
+    id: 'page-household-benchmark',
+    title: 'Household Benchmark',
+    subtitle: 'India HCES 2023–24 consumption expenditure benchmark & comparison',
+    url: '/household-benchmark',
     category: 'page',
     badge: 'Page',
-    keywords: ['recommendations', 'action plan', 'tips', 'guidance', 'advice', 'personalized', 'insights'],
+    keywords: ['household benchmark', 'benchmark', 'spending', 'hces', 'consumption', 'expenditure', 'peer spending', 'india spending', 'mpce', 'lifestyle'],
   },
   {
     id: 'page-market-insights',
@@ -169,19 +169,19 @@ const CORE_PAGES: SearchItem[] = [
 function getItemIcon(category: SearchItem['category']) {
   switch (category) {
     case 'page':
-      return <Compass className="h-4 w-4 text-primary" />;
+      return <Compass className="h-4 w-4 text-foreground" />;
     case 'income':
-      return <Wallet className="h-4 w-4 text-emerald-500" />;
+      return <Wallet className="h-4 w-4 text-emerald-600" />;
     case 'expense':
-      return <Receipt className="h-4 w-4 text-danger" />;
+      return <Receipt className="h-4 w-4 text-rose-600" />;
     case 'savings':
-      return <PiggyBank className="h-4 w-4 text-cyan-500" />;
+      return <PiggyBank className="h-4 w-4 text-emerald-600" />;
     case 'debt':
-      return <CreditCard className="h-4 w-4 text-amber-500" />;
+      return <CreditCard className="h-4 w-4 text-rose-600" />;
     case 'investment':
-      return <TrendingUp className="h-4 w-4 text-purple-500" />;
+      return <TrendingUp className="h-4 w-4 text-foreground" />;
     case 'fd':
-      return <Landmark className="h-4 w-4 text-blue-500" />;
+      return <Landmark className="h-4 w-4 text-foreground" />;
     default:
       return <FileText className="h-4 w-4 text-muted-foreground" />;
   }

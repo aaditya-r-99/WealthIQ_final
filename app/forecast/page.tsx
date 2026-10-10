@@ -21,7 +21,7 @@ import {
   FDRow,
 } from '@/lib/financial-engine';
 import { formatCurrency } from '@/lib/format';
-import { TrendingUp, Info, AlertCircle } from 'lucide-react';
+import { TrendingUp, Info, AlertCircle, Calculator } from 'lucide-react';
 
 export default function ForecastPage() {
   const { user, authState } = useAuth();
@@ -199,6 +199,92 @@ export default function ForecastPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Next-Month Expense Estimation (Deterministic Baseline) */}
+          {forecast?.next_month_expense_forecast && (
+            <Card className="border border-border shadow-sm">
+              <CardHeader className="pb-3">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Calculator className="h-4 w-4 text-primary" />
+                      Next-Month Expense Estimation
+                    </CardTitle>
+                    <CardDescription className="text-xs mt-1">
+                      Deterministic projection for upcoming month ({forecast.next_month_expense_forecast.target_month}) based on completed historical expense records.
+                    </CardDescription>
+                  </div>
+                  <div>
+                    <span className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                      {forecast.next_month_expense_forecast.tier === 'tier_0'
+                        ? 'Tier 0: Insufficient History'
+                        : forecast.next_month_expense_forecast.tier === 'tier_1'
+                        ? 'Tier 1: 3–5 Months (3M SMA)'
+                        : forecast.next_month_expense_forecast.tier === 'tier_2'
+                        ? 'Tier 2: 6–11 Months (6M EWMA)'
+                        : 'Tier 3: 12+ Months (Mature History)'}
+                    </span>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-lg border bg-muted/30 p-3">
+                    <p className="text-xs font-medium text-muted-foreground">Estimated Spending</p>
+                    <p className="mt-1 text-xl font-bold text-foreground">
+                      {forecast.next_month_expense_forecast.estimated_amount !== null
+                        ? formatCurrency(forecast.next_month_expense_forecast.estimated_amount)
+                        : 'Insufficient Data'}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      Target: {forecast.next_month_expense_forecast.target_month}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border bg-muted/30 p-3">
+                    <p className="text-xs font-medium text-muted-foreground">Calculation Method</p>
+                    <p className="mt-1 text-sm font-semibold text-foreground">
+                      {forecast.next_month_expense_forecast.method_name}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {forecast.next_month_expense_forecast.is_supported
+                        ? 'Supported Moving Baseline'
+                        : 'Conservative Fallback'}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border bg-muted/30 p-3">
+                    <p className="text-xs font-medium text-muted-foreground">Usable Completed Months</p>
+                    <p className="mt-1 text-xl font-bold text-foreground">
+                      {forecast.next_month_expense_forecast.usable_months_count} month(s)
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {forecast.next_month_expense_forecast.usable_months.length > 0
+                        ? forecast.next_month_expense_forecast.usable_months.join(', ')
+                        : 'No completed months'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground space-y-1">
+                  <p className="font-medium text-foreground">Methodology Note:</p>
+                  <p>{forecast.next_month_expense_forecast.explanation}</p>
+                </div>
+
+                {forecast.next_month_expense_forecast.data_limitations.length > 0 && (
+                  <div className="rounded-lg border border-warning/20 bg-warning/5 p-3 text-xs text-foreground/80 space-y-1.5">
+                    <p className="font-semibold text-warning-foreground flex items-center gap-1.5">
+                      <AlertCircle className="h-3.5 w-3.5 text-warning" />
+                      Data Quality &amp; Completeness Limitations:
+                    </p>
+                    <ul className="list-disc list-inside space-y-0.5 text-[11px] text-muted-foreground">
+                      {forecast.next_month_expense_forecast.data_limitations.map((lim, idx) => (
+                        <li key={idx}>{lim}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
     </DashboardLayout>
