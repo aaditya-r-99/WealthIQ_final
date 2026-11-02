@@ -21,6 +21,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Scale,
+  Layers,
 } from 'lucide-react';
 import { WealthIQLogo } from '@/components/wealthiq-logo';
 
@@ -54,6 +55,7 @@ const navGroups: NavGroup[] = [
   {
     label: 'Planning & Insights',
     items: [
+      { href: '/analytics', label: 'Analytics (OLAP)', icon: Layers },
       { href: '/forecast', label: 'Forecast', icon: TrendingUp },
       { href: '/household-benchmark', label: 'Household Benchmark', icon: Scale },
       { href: '/market-insights', label: 'Market Insights', icon: BarChart3 },

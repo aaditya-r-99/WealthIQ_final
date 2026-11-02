@@ -1,10 +1,8 @@
 // ============================================================
-// MOCK DATA — Phase 1 placeholder
+// Demo Fallback Data
 // ============================================================
-// IMPORTANT: This data is clearly marked mock UI data for Phase 1.
-// It will be replaced by real API responses from the FastAPI
-// backend and Supabase in later phases.
-// Do NOT treat these values as real financial analysis.
+// Sample datasets for unauthenticated preview and design demonstrations.
+// Real authenticated sessions receive verified data directly from Supabase and ML services.
 // ============================================================
 
 import type {

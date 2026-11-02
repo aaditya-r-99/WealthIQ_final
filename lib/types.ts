@@ -1,7 +1,6 @@
 // ============================================================
 // WealthIQ Type Definitions
-// Phase 1 — UI foundation types (mock data layer)
-// These types will later be used to shape real API responses.
+// Core domain and data transfer object (DTO) type definitions.
 // ============================================================
 
 export type HealthCategory = 'Critical' | 'Weak' | 'Moderate' | 'Healthy' | 'Excellent';
@@ -96,7 +95,7 @@ export interface FixedDepositRecord {
   created_at: string;
 }
 
-// --- Engineered features (computed in Phase 3, mocked in Phase 1) ---
+// --- Engineered features ---
 
 export interface FinancialFeatures {
   monthly_income: number;
@@ -117,7 +116,7 @@ export interface FinancialFeatures {
   net_worth: number;
 }
 
-// --- Scores (Phase 9 engine, mocked in Phase 1) ---
+// --- Financial Scores & Metrics ---
 
 export interface FinancialScore {
   id: string;
@@ -145,7 +144,7 @@ export interface ScoreBreakdown {
 }
 
 
-// --- Financial history (Phase 8 forecast, mocked in Phase 1) ---
+// --- Financial History & Projections ---
 
 export interface FinancialHistoryPoint {
   id: string;
@@ -168,7 +167,7 @@ export interface ForecastPoint {
   isForecast?: boolean;
 }
 
-// --- Market insights (Phase 12, mocked in Phase 1) ---
+// --- Market Insights ---
 
 export type DistanceCategory =
   | 'Very Near 52W High'
@@ -189,7 +188,7 @@ export interface MarketInsight {
   distance_category: DistanceCategory;
 }
 
-// --- FD comparison (Phase 11, mocked in Phase 1) ---
+// --- Fixed Deposit Comparison ---
 
 export interface FDRate {
   bank_name: string;
