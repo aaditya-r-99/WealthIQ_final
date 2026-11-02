@@ -1,5 +1,5 @@
 // ============================================================
-// WealthIQ Financial Intelligence Engine (Phase 3C Step 1)
+// WealthIQ Financial Intelligence Engine
 // Transparent, Deterministic Financial Health Scoring & Spending Risk
 // NOTE: Educational & demo financial model; not professional advice.
 // ============================================================
@@ -595,7 +595,7 @@ export function calculateFinancialForecast(
 }
 
 // ============================================================
-// Phase 11: Deterministic Expense Forecasting & Aggregation
+// Deterministic Expense Forecasting & Aggregation
 // ============================================================
 
 /**

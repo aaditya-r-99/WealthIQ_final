@@ -1,6 +1,6 @@
 // ============================================================
 // WealthIQ Official Fixed Deposit Rate Repository
-// Phase 19 — Verified Indian Bank Rate Configuration (October 2026)
+// Verified Indian Bank Rate Configuration (October 2026)
 // Sources: Official bank portals for Retail Deposits (< ₹3 Crore)
 // ============================================================
 

@@ -1,6 +1,6 @@
 /**
  * WealthIQ — Household Spending Benchmark Types and Client Helpers
- * Phase 17: HCES 2023-24 ML Regression Integration
+ * Household Consumer Expenditure Survey (HCES 2023-24) ML Regression Integration
  */
 
 export type SectorType = 'rural' | 'urban';

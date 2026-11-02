@@ -1,5 +1,5 @@
 /**
- * WealthIQ Transaction Classifier Normalization Engine & Shared Types (Phase 1)
+ * WealthIQ Transaction Classifier Normalization Engine & Shared Types
  *
  * Provides category normalization from the upstream Python hybrid classifier
  * to standard WealthIQ expense categories, conservative expense_type defaults,
